@@ -21,7 +21,8 @@ class LunarLockoutState(StateSpace):
         Creates a new LunarLockoutState state.
         @param width: The room's X dimension (excluding walls).
         @param height: The room's Y dimension (excluding walls).
-        @param robots: A tuple of all the robots' locations. Each robot is denoted by its index in the list. Note that robot[0] is xanadu. 
+        @param robots: A tuple of all the robots' locations. Each robot is denoted by its index in the list. 
+        @param xanadus: A tuple of all the xanadus' locations. Each xanadus is denoted by its index in the list. 
         '''
 
         if ((size%2)==0): 

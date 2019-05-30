@@ -20,7 +20,23 @@ def heur_trivial(state):
     return 0
 
 
-def heur_L_distance(state: LunarLockoutState):
+def heur_manhattan_distance(state):
+    # OPTIONAL
+    '''Manhattan distance LunarLockout heuristic'''
+    '''INPUT: a lunar lockout state'''
+    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
+    # Write a heuristic function that uses Manhattan distance to estimate distance between the current state and the goal.
+    # Your function should return a sum of the Manhattan distances between each xanadu and the escape hatch.
+
+    distance = 0
+    center = int((state.width - 1) / 2)
+    for rover in state.xanadus:
+        distance += abs(center - rover[0]) + abs(center - rover[1])
+
+    return distance
+
+
+def heur_L_distance(state):
     # IMPLEMENT
     '''L distance LunarLockout heuristic'''
     '''INPUT: a lunar lockout state'''
@@ -29,12 +45,11 @@ def heur_L_distance(state: LunarLockoutState):
     # Your function should return a sum of the L distances between each xanadu and the escape hatch.
     distance = 0
     center = int((state.width - 1) / 2)
-    if isinstance(state.xanadus[0], int):
-        distance += abs(center - state.xanadus[0]) + abs(center - state.xanadus[1])
-    else:
-        for rover in state.xanadus:
-            distance += abs(center - rover[0]) + abs(center - rover[1])
-
+    for rover in state.xanadus:
+        if rover[0] != center:
+            distance += 1
+        if rover[1] != center:
+            distance += 1
     return distance
 
 
@@ -130,7 +145,7 @@ def fval_function(sN, weight):
     Provide a custom formula for f-value computation for Anytime Weighted A star.
     Returns the fval of the state contained in the sNode.
 
-    @param sNode sN: A search node (containing a SokobanState)
+    @param sNode sN: A search node (containing a LunarLockoutState)
     @param float weight: Weight given by Anytime Weighted A star
     @rtype: float
     """
@@ -144,20 +159,20 @@ def fval_function(sN, weight):
     return 0
 
 
-def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=1):
+def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
+    # IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
     '''INPUT: a lunar lockout state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
-    se = SearchEngine('custom')
-
-
     return 0
 
 
-def anytime_gbfs(initial_state, heur_fn, timebound=1):
-    # IMPLEMENT
-    '''Provides an implementation of anytime greedy best-first search, as described in the HW1 handout'''
+def anytime_gbfs(initial_state, heur_fn, timebound=2):
+    # OPTIONAL
+    '''Provides an implementation of anytime greedy best-first search.  This iteratively uses greedy best first search,'''
+    '''At each iteration, however, a cost bound is enforced.  At each iteration the cost of the current "best" solution'''
+    '''is used to set the cost bound for the next iteration.  Only paths within the cost bound are considered at each iteration.'''
     '''INPUT: a lunar lockout state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     return 0
@@ -165,22 +180,22 @@ def anytime_gbfs(initial_state, heur_fn, timebound=1):
 
 PROBLEMS = (
     # 5x5 boards: all are solveable
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 1))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 2))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 3))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 1))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 2))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 3))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 4))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((2, 0))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((2, 1))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (0, 2), (0, 4), (2, 0), (4, 0)), ((4, 4))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 0))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 1))),
-    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 3))),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 1),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 2),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((0, 3),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 1),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 2),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 3),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((1, 4),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((2, 0),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((2, 1),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (0, 2), (0, 4), (2, 0), (4, 0)), ((4, 4),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 0),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 1),)),
+    LunarLockoutState("START", 0, None, 5, ((0, 0), (1, 0), (2, 2), (4, 2), (0, 4), (4, 4)), ((4, 3),)),
     # 7x7 BOARDS: all are solveable
-    LunarLockoutState("START", 0, None, 7, ((4, 2), (1, 3), (6, 3), (5, 4)), ((6, 2))),
-    LunarLockoutState("START", 0, None, 7, ((2, 1), (4, 2), (2, 6)), ((4, 6))),
+    LunarLockoutState("START", 0, None, 7, ((4, 2), (1, 3), (6, 3), (5, 4)), ((6, 2),)),
+    LunarLockoutState("START", 0, None, 7, ((2, 1), (4, 2), (2, 6)), ((4, 6),)),
     LunarLockoutState("START", 0, None, 7, ((2, 1), (3, 1), (4, 1), (2, 6), (4, 6)), ((2, 0), (3, 0), (4, 0))),
     LunarLockoutState("START", 0, None, 7, ((1, 2), (0, 2), (2, 3), (4, 4), (2, 5)), ((2, 4), (3, 1), (4, 0))),
     LunarLockoutState("START", 0, None, 7, ((3, 2), (0, 2), (3, 3), (4, 4), (2, 5)), ((1, 2), (3, 0), (4, 0))),
@@ -195,7 +210,7 @@ if __name__ == "__main__":
     unsolved = [];
     counter = 0;
     percent = 0;
-    timebound = 1;  # 1 second time limit for each problem
+    timebound = 2;  # 2 second time limit for each problem
     print("*************************************")
     print("Running A-star")
 
@@ -209,7 +224,7 @@ if __name__ == "__main__":
 
         print("*******RUNNING A STAR*******")
         se = SearchEngine('astar', 'full')
-        se.init_search(s0, lockout_goal_state, heur_L_distance)
+        se.init_search(s0, lockout_goal_state, heur_alternate)
         final = se.search(timebound)
 
         if final:
@@ -239,7 +254,7 @@ if __name__ == "__main__":
 
         s0 = PROBLEMS[i]
         weight = 4
-        final = anytime_weighted_astar(s0, heur_L_distance, weight, timebound)
+        final = anytime_weighted_astar(s0, heur_alternate, weight, timebound)
 
         if final:
             final.print_path()
@@ -267,7 +282,7 @@ if __name__ == "__main__":
         print("PROBLEM {}".format(i))
 
         s0 = PROBLEMS[i]
-        final = anytime_gbfs(s0, heur_L_distance, timebound)
+        final = anytime_gbfs(s0, heur_alternate, timebound)
 
         if final:
             final.print_path()
