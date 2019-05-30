@@ -6,10 +6,10 @@ from lunarlockout import LunarLockoutState, Direction, lockout_goal_state #for L
 #Select what to test
 test_manhattan = False
 test_L = True
-test_fval_function = True
-test_anytime_gbfs = True
-test_alternate = True
-test_anytime_weighted_astar = True
+test_fval_function = False
+test_anytime_gbfs = False
+test_alternate = False
+test_anytime_weighted_astar = False
 
 if test_manhattan:
     ##############################################################
