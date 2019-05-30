@@ -1,1 +1,17 @@
+Q1.
+
+
+
+
+Q2.
+False.
+Using Manhattan distance is not admissible.
+By the definition of a move, a move could travel many blocks, as long as there is a robot in the direction it moves.
+Manhattan distance could be greater than the number of actual moves.
+For example, a xanadu is 5 block far from the escape hatch, but as long as there is a robot at the appropriate position,
+the xanadu could take a single step to reach the escape hatch.
+Therefore, we cannot guarantee that h(n) < h*(n), where h*(n) is the cost of an optimal path.
+And the sum of the Manhattan distances between each xanadu and the exit is not an admissible heuristic for this problem.
+
+
 
