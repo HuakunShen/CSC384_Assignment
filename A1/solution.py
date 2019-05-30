@@ -149,6 +149,9 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=1):
     '''INPUT: a lunar lockout state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
+    se = SearchEngine('custom')
+
+
     return 0
 
 
