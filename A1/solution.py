@@ -44,7 +44,84 @@ def heur_alternate(state):
     '''INPUT: a lunar lockout state'''
     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
     # Your function should return a numeric value for the estimate of the distance to the goal.
-    return 0
+    distance = 0
+    center = int((state.width - 1) / 2)
+    if isinstance(state.xanadus[0], int):
+        distance = heur_alternate_helper(state, center, state.xanadus)
+    else:
+        for rover in state.xanadus:
+            distance += heur_alternate_helper(state, center, rover)
+
+    return distance
+
+
+def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -> int:
+    distance = [0, 0]
+    distance[0] += estimate_heur_horizontal_distance(state, center, rover)
+    if distance[0] == 0:
+        distance[0] += estimate_heur_vertical_distance(state, center, rover)
+    else:
+        new_pos = (center, rover[1])
+        distance[0] += estimate_heur_vertical_distance(state, center, new_pos)
+
+    distance[1] += estimate_heur_vertical_distance(state, center, rover)
+    if distance[1] == 0:
+        distance[1] += estimate_heur_horizontal_distance(state, center, rover)
+    else:
+        new_pos = (rover[0], center)
+        distance[1] += estimate_heur_horizontal_distance(state, center, new_pos)
+
+    return min(distance[0], distance[1])
+
+
+def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+    distance = 0
+    if center == pos[0]:
+        pass
+    else:
+        distance += abs(center - pos[0])
+        if center > pos[0]:
+            horizontal_pos = center + 1
+        else:
+            horizontal_pos = center - 1
+        if not robot_is_here(state, (horizontal_pos, pos[1])):
+            distance += 1
+    return distance
+
+
+def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+    distance = 0
+    if center == pos[1]:
+        pass
+    else:
+        distance += abs(center - pos[1])
+        if center > pos[1]:
+            vertical_pos = center + 1
+        else:
+            vertical_pos = center - 1
+        if not robot_is_here(state, (pos[0], vertical_pos)):
+            distance += 1
+    return distance
+
+
+def robot_is_here(state: LunarLockoutState, pos: tuple) -> bool:
+    '''
+    Given a lunar lock put state and a position, return true if a robot exists at the given position
+    :param state:
+    :param pos:
+    :return:
+    '''
+    if isinstance(state.xanadus[0], int):
+        if state.xanadus[0] == pos[0] and state.xanadus[1] == pos[1]:
+            return True
+    else:
+        for rover in state.xanadus:
+            if rover[0] == pos[0] and rover[1] == pos[1]:
+                return True
+    for robot in state.robots:
+        if robot[0] == pos[0] and robot[1] == pos[1]:
+            return True
+    return False
 
 
 def fval_function(sN, weight):
