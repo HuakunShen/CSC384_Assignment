@@ -72,6 +72,15 @@ def heur_alternate(state: LunarLockoutState):
 
 def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -> int:
     distance = [0, 0]
+    
+
+
+
+
+
+
+
+    distance = [0, 0]
     distance[0] += estimate_heur_horizontal_distance(state, center, rover)
     if distance[0] == 0:
         distance[0] += estimate_heur_vertical_distance(state, center, rover)
@@ -90,11 +99,10 @@ def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -
 
 
 def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
-    distance = 0
+    distance = 1
     if center == pos[0]:
-        pass
+        return 0
     else:
-        distance += 1
         if center > pos[0]:
             horizontal_pos = center + 1
         else:
@@ -105,11 +113,10 @@ def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos
 
 
 def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
-    distance = 0
+    distance = 1
     if center == pos[1]:
-        pass
+        return 0
     else:
-        distance += 1
         if center > pos[1]:
             vertical_pos = center + 1
         else:
