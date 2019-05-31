@@ -8,7 +8,7 @@ test_manhattan = False
 test_L = False
 test_fval_function = False
 test_anytime_gbfs = False
-test_alternate = False
+test_alternate = True
 test_anytime_weighted_astar = True
 
 if test_manhattan:
