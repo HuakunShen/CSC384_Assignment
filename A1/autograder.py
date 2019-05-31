@@ -182,7 +182,7 @@ if test_anytime_weighted_astar:
   # TEST ANYTIME WEIGHTED A STAR
   print('Testing Anytime Weighted A Star')
 
-  solved = 0; unsolved = []; benchmark = 0; timebound = 2 #2 second time limit 
+  solved = 0; unsolved = []; benchmark = 0; timebound = 2 #2 second time limit
   for i in range(0, len(PROBLEMS)):
     print("*************************************")  
     print("PROBLEM {}".format(i))

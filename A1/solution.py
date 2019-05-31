@@ -167,14 +167,14 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
     best_so_far = None
     while weight >= 1:
-        se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
+        # se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
         result = se.search(timebound)
         if result:
             if best_so_far is None:
                 best_so_far = result
             if best_so_far.gval > result.gval:
                 best_so_far = result
-        weight -= 0.1
+        weight -= 0.5
 
     return best_so_far
 
