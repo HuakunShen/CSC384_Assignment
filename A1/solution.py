@@ -155,14 +155,6 @@ def fval_function(sN: sNode, weight: float):
     return sN.gval + weight * sN.hval
 
 
-def goal_function(state: LunarLockoutState) -> bool:
-    center = int((state.width - 1) / 2)
-    for rover in state.xanadus:
-        if rover != (center, center):
-            return False
-    return True
-
-
 def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     # IMPLEMENT
     '''Provides an implementation of anytime weighted a-star, as described in the HW1 handout'''
@@ -171,11 +163,20 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     '''implementation of weighted astar algorithm'''
     se = SearchEngine('custom')
     wrapped_fval_function = lambda sN: fval_function(sN, weight)
-    goal_fn = lambda state: goal_function(state)
+    goal_fn = lambda state: lockout_goal_state(state)
     se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
-    
+    best_so_far = None
+    while weight >= 1:
+        se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
+        result = se.search(timebound)
+        if result:
+            if best_so_far is None:
+                best_so_far = result
+            if best_so_far.gval > result.gval:
+                best_so_far = result
+        weight -= 0.1
 
-    return 0
+    return best_so_far
 
 
 def anytime_gbfs(initial_state, heur_fn, timebound=2):

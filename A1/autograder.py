@@ -4,12 +4,12 @@ from solution import *
 from lunarlockout import LunarLockoutState, Direction, lockout_goal_state #for LunarLockout specific classes and problems
 
 #Select what to test
-test_manhattan = True
-test_L = True
-test_fval_function = True
+test_manhattan = False
+test_L = False
+test_fval_function = False
 test_anytime_gbfs = False
-test_alternate = True
-test_anytime_weighted_astar = False
+test_alternate = False
+test_anytime_weighted_astar = True
 
 if test_manhattan:
     ##############################################################
@@ -79,7 +79,7 @@ if test_alternate:
   # TEST ALTERNATE HEURISTIC
   print('Testing alternate heuristic with best_first search')
 
-  solved = 0; unsolved = []; benchmark = 12; timebound = 2 #time limit
+  solved = 0; unsolved = []; benchmark = 12; timebound = 2.75 #time limit
   output = [20, 5, 29, 12, 13, -99, 18, 41, 16, -99, 42, 38, -99, 43, 37, -99, -99, -99, -99, -99]
   for i in range(0, len(PROBLEMS)): 
 
