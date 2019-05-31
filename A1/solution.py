@@ -61,11 +61,8 @@ def heur_alternate(state: LunarLockoutState):
     # Your function should return a numeric value for the estimate of the distance to the goal.
     distance = 0
     center = int((state.width - 1) / 2)
-    if isinstance(state.xanadus[0], int):
-        distance = heur_alternate_helper(state, center, state.xanadus)
-    else:
-        for rover in state.xanadus:
-            distance += heur_alternate_helper(state, center, rover)
+    for rover in state.xanadus:
+        distance += heur_alternate_helper(state, center, rover)
 
     return distance
 
