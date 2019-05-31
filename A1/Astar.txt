@@ -1,5 +1,7 @@
 Q1.
-
+We know that, in order to have optimality, a heuristic must be admissible, and an admissible heuristic never overestimate.
+In order to avoid overestimation, reduce the given heuristic function by 20%, no matter if it's underestimated or
+overestimated, so that the heuristic never overestimate and has optimality.
 
 
 

@@ -13,14 +13,14 @@ from lunarlockout import LunarLockoutState, Direction, \
 
 
 # LunarLockout HEURISTICS
-def heur_trivial(state):
+def heur_trivial(state: LunarLockoutState):
     '''trivial admissible LunarLockout heuristic'''
     '''INPUT: a LunarLockout state'''
     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
     return 0
 
 
-def heur_manhattan_distance(state):
+def heur_manhattan_distance(state: LunarLockoutState):
     # OPTIONAL
     '''Manhattan distance LunarLockout heuristic'''
     '''INPUT: a lunar lockout state'''
@@ -36,7 +36,7 @@ def heur_manhattan_distance(state):
     return distance
 
 
-def heur_L_distance(state):
+def heur_L_distance(state: LunarLockoutState):
     # IMPLEMENT
     '''L distance LunarLockout heuristic'''
     '''INPUT: a lunar lockout state'''
@@ -53,7 +53,7 @@ def heur_L_distance(state):
     return distance
 
 
-def heur_alternate(state):
+def heur_alternate(state: LunarLockoutState):
     # IMPLEMENT
     '''a better lunar lockout heuristic'''
     '''INPUT: a lunar lockout state'''
@@ -94,7 +94,7 @@ def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos
     if center == pos[0]:
         pass
     else:
-        distance += abs(center - pos[0])
+        distance += 1
         if center > pos[0]:
             horizontal_pos = center + 1
         else:
@@ -109,7 +109,7 @@ def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: 
     if center == pos[1]:
         pass
     else:
-        distance += abs(center - pos[1])
+        distance += 1
         if center > pos[1]:
             vertical_pos = center + 1
         else:
@@ -126,20 +126,16 @@ def robot_is_here(state: LunarLockoutState, pos: tuple) -> bool:
     :param pos:
     :return:
     '''
-    if isinstance(state.xanadus[0], int):
-        if state.xanadus[0] == pos[0] and state.xanadus[1] == pos[1]:
+    for rover in state.xanadus:
+        if rover == pos:
             return True
-    else:
-        for rover in state.xanadus:
-            if rover[0] == pos[0] and rover[1] == pos[1]:
-                return True
     for robot in state.robots:
-        if robot[0] == pos[0] and robot[1] == pos[1]:
+        if robot == pos:
             return True
     return False
 
 
-def fval_function(sN, weight):
+def fval_function(sN: sNode, weight: float):
     # IMPLEMENT
     """
     Provide a custom formula for f-value computation for Anytime Weighted A star.
@@ -156,7 +152,7 @@ def fval_function(sN, weight):
     # The function must return a numeric f-value.
     # The value will determine your state's position on the Frontier list during a 'custom' search.
     # You must initialize your search engine object as a 'custom' search engine if you supply a custom fval function.
-    return 0
+    return sN.gval + weight * sN.hval
 
 
 def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
@@ -165,6 +161,11 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     '''INPUT: a lunar lockout state that represents the start state and a timebound (number of seconds)'''
     '''OUTPUT: A goal state (if a goal is found), else False'''
     '''implementation of weighted astar algorithm'''
+    se = SearchEngine('custom')
+    wrapped_fval_function = lambda sN: fval_function(sN, weight)
+    se.init_search(initial_state, heur_fn, heur_fn, wrapped_fval_function)
+
+
     return 0
 
 
