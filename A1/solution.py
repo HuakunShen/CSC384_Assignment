@@ -161,6 +161,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     goal_fn = lambda state: lockout_goal_state(state)
     se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
     best_so_far = None
+    
     while weight >= 1:
         # se.init_search(initial_state, goal_fn, heur_fn, wrapped_fval_function)
         result = se.search(timebound)
