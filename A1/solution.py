@@ -53,27 +53,30 @@ def heur_L_distance(state: LunarLockoutState):
     return distance
 
 
-# def heur_alternate(state: LunarLockoutState):
-#     # IMPLEMENT
-#     '''a better lunar lockout heuristic'''
-#     '''INPUT: a lunar lockout state'''
-#     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
-#     # Your function should return a numeric value for the estimate of the distance to the goal.
-#     distance = 0
-#     center = int((state.width - 1) / 2)
-#     for rover in state.xanadus:
-#
-#
-#     return distance
-
-
-
 def heur_alternate(state: LunarLockoutState):
     # IMPLEMENT
     '''a better lunar lockout heuristic'''
     '''INPUT: a lunar lockout state'''
-    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
-    # Your function should return a numeric value for the estimate of the distance to the goal.
+    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.
+    
+    if a rover is not in the same row as the center:
+        then it takes at least one move to move to the center row
+        h += 1
+        if on the center row, no other robot could stop the rover at the center:
+            then it takes at least one move to move some robot to that position
+            h += 1 
+            
+    Note: if the rover is in the same row or same column as the escape hatch, then no h-val is added for that direction
+    the above is one of the two case (try to move vertically then horizontally to reach the center)
+    we need to consider the other case (try to move horizontally then vertically to reach the center)
+    the algorithm is exactly the same (just change row to column)
+    
+    in addition, to avoid repeat-counting, we have a memoization array M, every position checked (to see if a helper 
+    robot exists) won't be checked again and h-value won't be counted again for the same position.
+    
+    Since every h-val increased is minimized (at least...), the h-value must be admissible
+    '''
+
     distance = 0
     center = int((state.width - 1) / 2)
     M = []
@@ -87,7 +90,7 @@ def heur_alternate(state: LunarLockoutState):
     return distance
 
 
-def heur_alternate_helper(M, state: LunarLockoutState, center: int, rover: tuple) -> int:
+def heur_alternate_helper(M: list, state: LunarLockoutState, center: int, rover: tuple) -> int:
     distance = [0, 0]
     distance[0] += estimate_heur_horizontal_distance(M, state, center, rover)
     if distance[0] == 0:
@@ -106,7 +109,7 @@ def heur_alternate_helper(M, state: LunarLockoutState, center: int, rover: tuple
     return min(distance[0], distance[1])
 
 
-def estimate_heur_horizontal_distance(M, state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_horizontal_distance(M: list, state: LunarLockoutState, center: int, pos: tuple) -> int:
     distance = 1
     if center == pos[0]:
         return 0
@@ -123,7 +126,7 @@ def estimate_heur_horizontal_distance(M, state: LunarLockoutState, center: int, 
     return distance
 
 
-def estimate_heur_vertical_distance(M, state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_vertical_distance(M: list, state: LunarLockoutState, center: int, pos: tuple) -> int:
     distance = 1
     if center == pos[1]:
         return 0
