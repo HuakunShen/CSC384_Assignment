@@ -53,6 +53,21 @@ def heur_L_distance(state: LunarLockoutState):
     return distance
 
 
+# def heur_alternate(state: LunarLockoutState):
+#     # IMPLEMENT
+#     '''a better lunar lockout heuristic'''
+#     '''INPUT: a lunar lockout state'''
+#     '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
+#     # Your function should return a numeric value for the estimate of the distance to the goal.
+#     distance = 0
+#     center = int((state.width - 1) / 2)
+#     for rover in state.xanadus:
+#
+#
+#     return distance
+
+
+
 def heur_alternate(state: LunarLockoutState):
     # IMPLEMENT
     '''a better lunar lockout heuristic'''
@@ -61,32 +76,37 @@ def heur_alternate(state: LunarLockoutState):
     # Your function should return a numeric value for the estimate of the distance to the goal.
     distance = 0
     center = int((state.width - 1) / 2)
+    M = []
+    for i in range(state.width):
+        M.append([])
+        for j in range(state.height):
+            M[i].append(False)
     for rover in state.xanadus:
-        distance += heur_alternate_helper(state, center, rover)
+        distance += heur_alternate_helper(M, state, center, rover)
 
     return distance
 
 
-def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -> int:
+def heur_alternate_helper(M, state: LunarLockoutState, center: int, rover: tuple) -> int:
     distance = [0, 0]
-    distance[0] += estimate_heur_horizontal_distance(state, center, rover)
+    distance[0] += estimate_heur_horizontal_distance(M, state, center, rover)
     if distance[0] == 0:
-        distance[0] += estimate_heur_vertical_distance(state, center, rover)
+        distance[0] += estimate_heur_vertical_distance(M, state, center, rover)
     else:
         new_pos = (center, rover[1])
-        distance[0] += estimate_heur_vertical_distance(state, center, new_pos)
+        distance[0] += estimate_heur_vertical_distance(M, state, center, new_pos)
 
-    distance[1] += estimate_heur_vertical_distance(state, center, rover)
+    distance[1] += estimate_heur_vertical_distance(M, state, center, rover)
     if distance[1] == 0:
-        distance[1] += estimate_heur_horizontal_distance(state, center, rover)
+        distance[1] += estimate_heur_horizontal_distance(M, state, center, rover)
     else:
         new_pos = (rover[0], center)
-        distance[1] += estimate_heur_horizontal_distance(state, center, new_pos)
+        distance[1] += estimate_heur_horizontal_distance(M, state, center, new_pos)
 
     return min(distance[0], distance[1])
 
 
-def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_horizontal_distance(M, state: LunarLockoutState, center: int, pos: tuple) -> int:
     distance = 1
     if center == pos[0]:
         return 0
@@ -95,12 +115,15 @@ def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos
             horizontal_pos = center + 1
         else:
             horizontal_pos = center - 1
+        if M[horizontal_pos][pos[1]]:
+            return distance
         if not robot_is_here(state, (horizontal_pos, pos[1])):
             distance += 1
+        M[horizontal_pos][pos[1]] = True
     return distance
 
 
-def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_vertical_distance(M, state: LunarLockoutState, center: int, pos: tuple) -> int:
     distance = 1
     if center == pos[1]:
         return 0
@@ -109,8 +132,11 @@ def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: 
             vertical_pos = center + 1
         else:
             vertical_pos = center - 1
+        if M[pos[0]][vertical_pos]:
+            return distance
         if not robot_is_here(state, (pos[0], vertical_pos)):
             distance += 1
+        M[pos[0]][vertical_pos] = True
     return distance
 
 
