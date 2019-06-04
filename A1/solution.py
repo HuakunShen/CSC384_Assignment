@@ -93,10 +93,46 @@ def heur_alternate(state: LunarLockoutState):
     for robot in state.robots:
         map[robot[0]][robot[1]] = True
 
+    if unsolvable(state):
+        return float("inf")
+
     for rover in state.xanadus:
         distance += heur_alternate_helper(M, map, center, rover)
 
     return distance
+
+
+def unsolvable(state: LunarLockoutState):
+    for rover in state.xanadus:
+        if gt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+
+        if lt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+        
+        return False
+
+
+def gt_all(rover, state: LunarLockoutState, x_or_y: int):
+    for robot in state.xanadus:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    return True
+
+
+def lt_all(rover, state: LunarLockoutState, x_or_y: int):
+    for robot in state.xanadus:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    return True
 
 
 def heur_alternate_helper(M: list, map: list, center: int, rover: tuple) -> int:
