@@ -57,7 +57,26 @@ def heur_alternate(state: LunarLockoutState):
     # IMPLEMENT
     '''a better lunar lockout heuristic'''
     '''INPUT: a lunar lockout state'''
-    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.'''
+    '''OUTPUT: a numeric value that serves as an estimate of the distance of the state to the goal.
+    
+    if a rover is not in the same row as the center:
+        then it takes at least one move to move to the center row
+        h += 1
+        if on the center row, no other robot could stop the rover at the center:
+            then it takes at least one move to move some robot to that position
+            h += 1 
+            
+    Note: if the rover is in the same row or same column as the escape hatch, then no h-val is added for that direction
+    the above is one of the two case (try to move vertically then horizontally to reach the center)
+    we need to consider the other case (try to move horizontally then vertically to reach the center)
+    the algorithm is exactly the same (just change row to column)
+    
+    in addition, to avoid repeat-counting, we have a memoization array M, every position checked (to see if a helper 
+    robot exists) won't be checked again and h-value won't be counted again for the same position.
+    
+    Since every h-val increased is minimized (at least...), the h-value must be admissible
+    
+    '''
     # Your function should return a numeric value for the estimate of the distance to the goal.
     distance = 0
     center = int((state.width - 1) / 2)
@@ -170,7 +189,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
                 best_so_far = result
             if best_so_far.gval > result.gval:
                 best_so_far = result
-        weight = 1 + (weight - 1) * 0.5
+        weight = 1 + (weight - 1) * 2 / 3
     return best_so_far
 
 
