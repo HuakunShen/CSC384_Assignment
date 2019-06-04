@@ -152,22 +152,6 @@ def estimate_heur_vertical_distance(M: list, map, center: int, pos: tuple) -> in
     return distance
 
 
-# def robot_is_here(state: LunarLockoutState, pos: tuple) -> bool:
-#     '''
-#     Given a lunar lock put state and a position, return true if a robot exists at the given position
-#     :param state:
-#     :param pos:
-#     :return:
-#     '''
-#     for rover in state.xanadus:
-#         if rover == pos:
-#             return True
-#     for robot in state.robots:
-#         if robot == pos:
-#             return True
-#     return False
-
-
 def fval_function(sN: sNode, weight: float):
     # IMPLEMENT
     """
@@ -197,10 +181,11 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     se = SearchEngine('custom')
     wrapped_fval_function = lambda sN: fval_function(sN, weight)
     # goal_fn = lambda state: lockout_goal_state(state)
-    se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+    # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
     best_so_far = None
     search_stop_time = os.times()[0] + timebound
     while search_stop_time > os.times()[0] and weight >= 1:
+        se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
         result = se.search(search_stop_time - os.times()[0])
         if result:
             if best_so_far is None:
