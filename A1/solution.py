@@ -170,7 +170,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
                 best_so_far = result
             if best_so_far.gval > result.gval:
                 best_so_far = result
-        weight -= 0.5
+        weight = 1 + (weight - 1) * 0.5
     return best_so_far
 
 
