@@ -129,9 +129,10 @@ def estimate_heur_horizontal_distance(M: list, map, center: int, pos: tuple) -> 
             horizontal_pos = center - 1
         if M[horizontal_pos][pos[1]]:
             return distance
-        if not map[horizontal_pos][pos[1]]:
-            distance += 1
-        M[horizontal_pos][pos[1]] = True
+        if not M[horizontal_pos][pos[1]]:
+            if not map[horizontal_pos][pos[1]]:
+                distance += 1
+            M[horizontal_pos][pos[1]] = True
     return distance
 
 
@@ -146,9 +147,10 @@ def estimate_heur_vertical_distance(M: list, map, center: int, pos: tuple) -> in
             vertical_pos = center - 1
         if M[pos[0]][vertical_pos]:
             return distance
-        if not map[pos[0]][vertical_pos]:
-            distance += 1
-        M[pos[0]][vertical_pos] = True
+        if not M[pos[0]][vertical_pos]:
+            if not map[pos[0]][vertical_pos]:
+                distance += 1
+            M[pos[0]][vertical_pos] = True
     return distance
 
 
