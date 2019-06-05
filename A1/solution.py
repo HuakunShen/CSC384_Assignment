@@ -76,7 +76,6 @@ def heur_alternate(state: LunarLockoutState):
     
     Since every h-val increased is minimized (at least...), the h-value must be admissible
     '''
-
     distance = 0
     center = int((state.width - 1) / 2)
     M = []
@@ -192,7 +191,7 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
                 best_so_far = result
             if best_so_far.gval > result.gval:
                 best_so_far = result
-        weight = 1 + (weight - 1) / 2
+        weight = 1 + (weight - 1) * 4 / 5
     return best_so_far
 
 
