@@ -74,6 +74,9 @@ def heur_alternate(state: LunarLockoutState):
     in addition, to avoid repeat-counting, we have a memoization array M, every position checked (to see if a helper 
     robot exists) won't be checked again and h-value won't be counted again for the same position.
     
+    unsolvable case is checked, if a rover is at a position that's furtherest from the escape hatch than any other robots (no one could help
+    it to get closer to center), then return infinity for the unsolvable state.
+
     Since every h-val increased is minimized (at least...), the h-value must be admissible
     '''
     distance = 0
@@ -92,13 +95,56 @@ def heur_alternate(state: LunarLockoutState):
     for robot in state.robots:
         map[robot[0]][robot[1]] = True
 
+    if unsolvable(state):
+        return float("inf")
+
     for rover in state.xanadus:
         distance += heur_alternate_helper(M, map, center, rover)
 
     return distance
 
 
+def unsolvable(state: LunarLockoutState):
+    ''' check if a given state is unsolvable
+        if a rover is at a position where no other robots/rover could help it to move closer to the escape hatch, then it's unsolvable
+    '''
+    for rover in state.xanadus:
+        if gt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+
+        if lt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+        
+        return False
+
+
+def gt_all(rover, state: LunarLockoutState, x_or_y: int):
+    ''' check if the position index of a given rover is greater than all other robots/rovers in a given direction (row or column)
+    '''
+    for robot in state.xanadus:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    return True
+
+
+def lt_all(rover, state: LunarLockoutState, x_or_y: int):
+    ''' check if the position index of a given rover is less than all other robots/rovers in a given direction (row or column)'''
+    for robot in state.xanadus:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    return True
+
+
 def heur_alternate_helper(M: list, map: list, center: int, rover: tuple) -> int:
+    '''determine heuristic cost to be added for a rover based on positions of other robots and rovers'''
     distance = [0, 0]
     distance[0] += estimate_heur_horizontal_distance(M, map, center, rover)
     if distance[0] == 0:
@@ -118,6 +164,9 @@ def heur_alternate_helper(M: list, map: list, center: int, rover: tuple) -> int:
 
 
 def estimate_heur_horizontal_distance(M: list, map, center: int, pos: tuple) -> int:
+    '''given a rover's position, if there is a robot/rover on the save row that could stop the rover on the center column, then
+        return 0, otherwise return 1
+    '''
     distance = 1
     if center == pos[0]:
         return 0
@@ -135,6 +184,9 @@ def estimate_heur_horizontal_distance(M: list, map, center: int, pos: tuple) -> 
 
 
 def estimate_heur_vertical_distance(M: list, map, center: int, pos: tuple) -> int:
+    '''given a rover's position, if there is a robot/rover on the same column that could stop the rover on the center row, then
+        return 0, otherwise return 1
+    '''
     distance = 1
     if center == pos[1]:
         return 0
@@ -180,11 +232,11 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     se = SearchEngine('custom')
     wrapped_fval_function = lambda sN: fval_function(sN, weight)
     # goal_fn = lambda state: lockout_goal_state(state)
-    # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+    se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
     best_so_far = None
     search_stop_time = os.times()[0] + timebound
     while search_stop_time > os.times()[0] and weight >= 1:
-        se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+        # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
         result = se.search(search_stop_time - os.times()[0])
         if result:
             if best_so_far is None:
