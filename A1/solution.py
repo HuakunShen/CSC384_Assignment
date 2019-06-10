@@ -231,12 +231,11 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     '''implementation of weighted astar algorithm'''
     se = SearchEngine('custom')
     wrapped_fval_function = lambda sN: fval_function(sN, weight)
-    # goal_fn = lambda state: lockout_goal_state(state)
-    se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+    # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
     best_so_far = None
     search_stop_time = os.times()[0] + timebound
     while search_stop_time > os.times()[0] and weight >= 1:
-        # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+        se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
         result = se.search(search_stop_time - os.times()[0])
         if result:
             if best_so_far is None:
