@@ -28,6 +28,7 @@ class ReflexAgent(Agent):
       it in any way you see fit, so long as you don't touch our method
       headers.
     """
+    direction_dict = {"Stop": (0, 0), "North": (0, 1), "South": (0, -1), "West": (-1, 0), "East": (1, 0)}
 
     def getAction(self, gameState):
         """
@@ -74,8 +75,38 @@ class ReflexAgent(Agent):
         newScaredTimes = [ghostState.scaredTimer for ghostState in newGhostStates]
 
         "*** YOUR CODE HERE ***"
+        # initialize some useful value
+        print("==================================================")
+        current_pos = currentGameState.getPacmanPosition()
+        print("current_pos=", current_pos)
+        print("newPos=", newPos)
+        current_food_list = currentGameState.getFood().asList()
+        print("current_food_list=", current_food_list)
+        new_food_list = newFood.asList()
+        print("new_food_list=", new_food_list)
+        width = newFood.width
+        print("width=", width)
+        height = newFood.height
+        print("height=", height)
+        direction = self.direction_dict[action]
+        print("direction=", direction)
+        print("==================================================")
+        score = 0
+
+        # find closest food with manhattan distance
+        new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
+        score = 1 / new_pos_closest_food_m_distance * 10       # reciprocal of distance, lower distance => higher score
+
+        print("Score: ", score)
+        print("==================================================")
         return successorGameState.getScore()
 
+    def closestFoodMDistance(self, newPos: tuple, new_food_list: list) -> int:
+        min_distance = -float("inf")
+        for pos in new_food_list:
+            tmp_distance = manhattanDistance(newPos, pos)
+            min_distance = min(min_distance, tmp_distance)
+        return min_distance
 
 def scoreEvaluationFunction(currentGameState):
     """
