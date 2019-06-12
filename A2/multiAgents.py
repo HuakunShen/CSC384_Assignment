@@ -96,7 +96,14 @@ class ReflexAgent(Agent):
         closest_ghost_m_distance = self.closestGhostMDistance(new_ghost_positions, newPos)
         # print("==================================================")
         score = 0
-
+        # see if newPos has food in currentState's view
+        if currentGameState.hasFood(newPos[0], newPos[1]):
+            print("hasFood: True")
+            score += 20
+        else:
+            print("hasFood: False")
+        if len(new_ghost_positions) == 0:
+            return score + random.randint(0, 10)
         # find closest food with manhattan distance
         new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
         score += 1 / new_pos_closest_food_m_distance * 10  # reciprocal of distance, lower distance => higher score
@@ -113,13 +120,6 @@ class ReflexAgent(Agent):
 
 
 
-        # see if newPos has food in currentState's view
-        if currentGameState.hasFood(newPos[0], newPos[1]):
-            print("hasFood: True")
-            score += 20
-        else:
-            print("hasFood: False")
-
         # count food around in circle
         # count_food_around = self.foodAround(new_food_list, newPos, successorGameState)
         # score += count_food_around
@@ -133,9 +133,10 @@ class ReflexAgent(Agent):
                                                                      newFood,
                                                                      current_pos, direction)
             score += sum_food_in_range / danger_zone_M_distance
-            # if score <= danger_zone_M_distance:
-            #     random_val = random.random()
-            #     score += random_val * 10
+            # if len(new_ghost_positions) == 0:
+            #     random_val = random.randint(0, 20)
+            #     # random_val = random.random()
+            #     score += random_val
 
 
 
