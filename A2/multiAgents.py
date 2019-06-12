@@ -81,32 +81,155 @@ class ReflexAgent(Agent):
         print("current_pos=", current_pos)
         print("newPos=", newPos)
         current_food_list = currentGameState.getFood().asList()
-        print("current_food_list=", current_food_list)
+        # print("current_food_list=", current_food_list)
         new_food_list = newFood.asList()
-        print("new_food_list=", new_food_list)
+        # print("new_food_list=", new_food_list)
         width = newFood.width
         print("width=", width)
         height = newFood.height
         print("height=", height)
         direction = self.direction_dict[action]
-        print("direction=", direction)
-        print("==================================================")
+        print("direction=", action, direction)
+        new_ghost_positions = successorGameState.getGhostPositions()
+        danger_zone_M_distance = max(1, width * height / 50)
+        print("danger_zone_M_distance=", danger_zone_M_distance)
+        closest_ghost_m_distance = self.closestGhostMDistance(new_ghost_positions, newPos)
+        # print("==================================================")
         score = 0
 
         # find closest food with manhattan distance
         new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
-        score = 1 / new_pos_closest_food_m_distance * 10       # reciprocal of distance, lower distance => higher score
+        score += 1 / new_pos_closest_food_m_distance * 10  # reciprocal of distance, lower distance => higher score
+        print("score after closest food distance=", score)
 
+
+        # check scared time
+        total_scared_time = 0
+        for scared_time in newScaredTimes:
+            total_scared_time += scared_time
+        score += total_scared_time
+
+
+
+
+
+        # see if newPos has food in currentState's view
+        if currentGameState.hasFood(newPos[0], newPos[1]):
+            print("hasFood: True")
+            score += 20
+        else:
+            print("hasFood: False")
+
+        # count food around in circle
+        # count_food_around = self.foodAround(new_food_list, newPos, successorGameState)
+        # score += count_food_around
+        # print("food around: ", count_food_around)
+
+
+        # if in a zone, no food around, check greater range for food
+        if score <= danger_zone_M_distance:
+            # food in range of direction of action
+            sum_food_in_range = self.sumOfFoodInActionDirectionRange(action, currentGameState, current_food_list,
+                                                                     newFood,
+                                                                     current_pos, direction)
+            score += sum_food_in_range / danger_zone_M_distance
+            # if score <= danger_zone_M_distance:
+            #     random_val = random.random()
+            #     score += random_val * 10
+
+
+
+        # if action == Directions.STOP:
+        #     return 0
+
+
+
+
+
+        # random factor for stuck situation
+        # random_val = random.randint(0, 5)
+        # score += random_val
+
+        # check walls
+        count_wall = 0
+        if successorGameState.hasWall(newPos[0], newPos[1] + 1):
+            count_wall += 1
+        if successorGameState.hasWall(newPos[0], newPos[1] - 1):
+            count_wall += 1
+        if successorGameState.hasWall(newPos[0] + 1, newPos[1]):
+            count_wall += 1
+        if successorGameState.hasWall(newPos[0] - 1, newPos[1]):
+            count_wall += 1
+        print("num wall around: ", count_wall)
+
+
+        if count_wall == 3:
+            # score -= total_scared_time
+            score = min(closest_ghost_m_distance + 1, score)
+
+        # to void ghost
+
+        if closest_ghost_m_distance <= danger_zone_M_distance and total_scared_time == 0:
+            score = min(score, closest_ghost_m_distance)
+            if closest_ghost_m_distance <= 1:
+                return 0
         print("Score: ", score)
         print("==================================================")
-        return successorGameState.getScore()
+        return score
 
     def closestFoodMDistance(self, newPos: tuple, new_food_list: list) -> int:
-        min_distance = -float("inf")
+        min_distance = float("inf")
         for pos in new_food_list:
             tmp_distance = manhattanDistance(newPos, pos)
             min_distance = min(min_distance, tmp_distance)
         return min_distance
+
+    def closestGhostMDistance(self, new_ghost_positions, pacman_pos) -> int:
+        min_distance = float("inf")
+        for pos in new_ghost_positions:
+            tmp_distance = manhattanDistance(pos, pacman_pos)
+            min_distance = min(tmp_distance, min_distance)
+        return min_distance
+
+    def foodAround(self, new_food_list, newPos, successorGameState):
+        count_food_around = 0
+        offset_lst = [-2, -1, 0, 1, 2]
+        for offset_x in offset_lst:
+            for offset_y in offset_lst:
+                if successorGameState.hasFood(offset_x + newPos[0], offset_y + newPos[1]):
+                    count_food_around += 1
+        return count_food_around
+
+    def sumOfFoodInActionDirectionRange(self, action, currentGameState, current_food_list, newFood, current_pos,
+                                        direction):
+        print("current_pos: " + str(current_pos))
+        search_range_x = (0, newFood.width)
+        search_range_y = (0, newFood.height)
+        if direction[0] == 1:
+            search_range_x = (currentGameState.getPacmanPosition()[0] + 1, newFood.width)
+        elif direction[0] == -1:
+            search_range_x = (1, currentGameState.getPacmanPosition()[0] - 1)
+        elif direction[1] == 1:
+            search_range_y = (currentGameState.getPacmanPosition()[1] + 1, newFood.height)
+        elif direction[1] == -1:
+            search_range_y = (1, currentGameState.getPacmanPosition()[1] - 1)
+        print("width: ", newFood.width)
+        print("height: ", newFood.height)
+        print("x_range: " + str(search_range_x))
+        print("y_range: " + str(search_range_y))
+        # print("current_food_list: ", current_food_list)
+        sum_food_in_range = 0
+        if action is not Directions.STOP:
+            sum_food_in_range = self.sumFoodGivenRange(search_range_x, search_range_y, current_food_list)
+        print("sum_food_in_range: " + str(sum_food_in_range))
+        return sum_food_in_range
+
+    def sumFoodGivenRange(self, search_range_x, search_range_y, current_food_list):
+        count_food = 0
+        for food in current_food_list:
+            if search_range_x[1] >= food[0] >= search_range_x[0] and search_range_y[1] >= food[1] >= search_range_y[0]:
+                count_food += 1
+        return count_food
 
 def scoreEvaluationFunction(currentGameState):
     """
