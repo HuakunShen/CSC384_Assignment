@@ -107,7 +107,7 @@ class ReflexAgent(Agent):
         # see if newPos has food in currentState's view
         if currentGameState.hasFood(newPos[0], newPos[1]):
             print("hasFood: True")
-            score += 20
+            score += 100
         else:
             print("hasFood: False")
         if len(new_ghost_positions) == 0:
@@ -118,7 +118,7 @@ class ReflexAgent(Agent):
             return score + random.randint(0, 10)
         # find closest food with manhattan distance
         new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
-        score += 1 / new_pos_closest_food_m_distance * 10  # reciprocal of distance, lower distance => higher score
+        score += 1 / new_pos_closest_food_m_distance * 30  # reciprocal of distance, lower distance => higher score
         print("score after closest food distance=", score)
 
         # if in a zone, no food around, check greater range for food
