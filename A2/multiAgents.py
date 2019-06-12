@@ -127,7 +127,7 @@ class ReflexAgent(Agent):
             sum_food_in_range = self.sumOfFoodInActionDirectionRange(action, currentGameState, current_food_list,
                                                                      newFood,
                                                                      current_pos, direction)
-            score += sum_food_in_range / danger_zone_M_distance
+            score += sum_food_in_range / (danger_zone_M_distance / 2)
             score += random.randint(0, 10)
 
         count_wall = 0
