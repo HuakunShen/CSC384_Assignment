@@ -97,17 +97,19 @@ class ReflexAgent(Agent):
         closest_ghost_m_distance = self.closestGhostMDistance(new_ghost_positions, newPos)
         # print("==================================================")
         score = 0
-
         # check scared time
         total_scared_time = 0
         for scared_time in newScaredTimes:
             total_scared_time += scared_time
         score += total_scared_time
-
+        if closest_ghost_m_distance <= 1 and total_scared_time == 0:
+            return 0
         # see if newPos has food in currentState's view
+        food_in_new_pos_score = 0
         if currentGameState.hasFood(newPos[0], newPos[1]):
             print("hasFood: True")
-            score += 100
+            food_in_new_pos_score += 100
+            score += food_in_new_pos_score
         else:
             print("hasFood: False")
         if len(new_ghost_positions) == 0:
@@ -118,7 +120,7 @@ class ReflexAgent(Agent):
             return score + random.randint(0, 10)
         # find closest food with manhattan distance
         new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
-        score += 1 / new_pos_closest_food_m_distance * 30  # reciprocal of distance, lower distance => higher score
+        score += 1 / new_pos_closest_food_m_distance * 100  # reciprocal of distance, lower distance => higher score
         print("score after closest food distance=", score)
 
         # if in a zone, no food around, check greater range for food
@@ -127,8 +129,8 @@ class ReflexAgent(Agent):
             sum_food_in_range = self.sumOfFoodInActionDirectionRange(action, currentGameState, current_food_list,
                                                                      newFood,
                                                                      current_pos, direction)
-            score += sum_food_in_range / (danger_zone_M_distance / 2)
-            score += random.randint(0, 10)
+            score += sum_food_in_range
+            score += random.randint(0, 5)
 
         count_wall = 0
         if successorGameState.hasWall(newPos[0], newPos[1] + 1):
@@ -142,13 +144,11 @@ class ReflexAgent(Agent):
         print("num wall around: ", count_wall)
 
         if count_wall >= 3:
-            return danger_zone_M_distance
+            return food_in_new_pos_score
         # to void ghost
 
         if closest_ghost_m_distance <= danger_zone_M_distance and total_scared_time == 0:
             score = min(score, closest_ghost_m_distance)
-            if closest_ghost_m_distance <= 1:
-                return 0
         print("Score: ", score)
         print("==================================================")
         return score
