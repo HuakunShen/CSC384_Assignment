@@ -28,7 +28,7 @@ class ReflexAgent(Agent):
       it in any way you see fit, so long as you don't touch our method
       headers.
     """
-
+    direction_dict = {"Stop": (0, 0), "North": (0, 1), "South": (0, -1), "West": (-1, 0), "East": (1, 0)}
     def getAction(self, gameState):
         """
         You do not need to change this method, but you're welcome to.
