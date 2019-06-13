@@ -74,45 +74,100 @@ def heur_alternate(state: LunarLockoutState):
     in addition, to avoid repeat-counting, we have a memoization array M, every position checked (to see if a helper 
     robot exists) won't be checked again and h-value won't be counted again for the same position.
     
+    unsolvable case is checked, if a rover is at a position that's furtherest from the escape hatch than any other robots (no one could help
+    it to get closer to center), then return infinity for the unsolvable state.
+
     Since every h-val increased is minimized (at least...), the h-value must be admissible
-    
     '''
-    # Your function should return a numeric value for the estimate of the distance to the goal.
+
     distance = 0
     center = int((state.width - 1) / 2)
+    M = []
+    map = []
+    for i in range(state.width):
+        M.append([])
+        map.append([])
+        for j in range(state.height):
+            M[i].append(False)
+            map[i].append(False)
+
     for rover in state.xanadus:
-        distance += heur_alternate_helper(state, center, rover)
+        map[rover[0]][rover[1]] = True
+    for robot in state.robots:
+        map[robot[0]][robot[1]] = True
+
+    if unsolvable(state):
+        return float("inf")
+
+    for rover in state.xanadus:
+        distance += heur_alternate_helper(M, map, center, rover)
 
     return distance
 
 
-def find_outermost_rovers(state: LunarLockoutState) -> tuple:
-	result = None
-	
-	
+def unsolvable(state: LunarLockoutState):
+    ''' check if a given state is unsolvable
+        if a rover is at a position where no other robots/rover could help it to move closer to the escape hatch, then it's unsolvable
+    '''
+    for rover in state.xanadus:
+        if gt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+
+        if lt_all(rover, state, 0):
+            if gt_all(rover, state, 1) or lt_all(rover, state, 1):
+                return True
+        
+        return False
 
 
+def gt_all(rover, state: LunarLockoutState, x_or_y: int):
+    ''' check if the position index of a given rover is greater than all other robots/rovers in a given direction (row or column)
+    '''
+    for robot in state.xanadus:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] < robot[x_or_y]:
+            return False
+    return True
 
-def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -> int:
+
+def lt_all(rover, state: LunarLockoutState, x_or_y: int):
+    ''' check if the position index of a given rover is less than all other robots/rovers in a given direction (row or column)'''
+    for robot in state.xanadus:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    for robot in state.robots:
+        if rover[x_or_y] > robot[x_or_y]:
+            return False
+    return True
+
+
+def heur_alternate_helper(M: list, map: list, center: int, rover: tuple) -> int:
+    '''determine heuristic cost to be added for a rover based on positions of other robots and rovers'''
     distance = [0, 0]
-    distance[0] += estimate_heur_horizontal_distance(state, center, rover)
+    distance[0] += estimate_heur_horizontal_distance(M, map, center, rover)
     if distance[0] == 0:
-        distance[0] += estimate_heur_vertical_distance(state, center, rover)
+        distance[0] += estimate_heur_vertical_distance(M, map, center, rover)
     else:
         new_pos = (center, rover[1])
-        distance[0] += estimate_heur_vertical_distance(state, center, new_pos)
+        distance[0] += estimate_heur_vertical_distance(M, map, center, new_pos)
 
-    distance[1] += estimate_heur_vertical_distance(state, center, rover)
+    distance[1] += estimate_heur_vertical_distance(M, map, center, rover)
     if distance[1] == 0:
-        distance[1] += estimate_heur_horizontal_distance(state, center, rover)
+        distance[1] += estimate_heur_horizontal_distance(M, map, center, rover)
     else:
         new_pos = (rover[0], center)
-        distance[1] += estimate_heur_horizontal_distance(state, center, new_pos)
+        distance[1] += estimate_heur_horizontal_distance(M, map, center, new_pos)
 
     return min(distance[0], distance[1])
 
 
-def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_horizontal_distance(M: list, map, center: int, pos: tuple) -> int:
+    '''given a rover's position, if there is a robot/rover on the save row that could stop the rover on the center column, then
+        return 0, otherwise return 1
+    '''
     distance = 1
     if center == pos[0]:
         return 0
@@ -121,12 +176,18 @@ def estimate_heur_horizontal_distance(state: LunarLockoutState, center: int, pos
             horizontal_pos = center + 1
         else:
             horizontal_pos = center - 1
-        if not robot_is_here(state, (horizontal_pos, pos[1])):
+        if M[horizontal_pos][pos[1]]:
+            return distance
+        if not map[horizontal_pos][pos[1]]:
             distance += 1
+        M[horizontal_pos][pos[1]] = True
     return distance
 
 
-def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: tuple) -> int:
+def estimate_heur_vertical_distance(M: list, map, center: int, pos: tuple) -> int:
+    '''given a rover's position, if there is a robot/rover on the same column that could stop the rover on the center row, then
+        return 0, otherwise return 1
+    '''
     distance = 1
     if center == pos[1]:
         return 0
@@ -135,25 +196,12 @@ def estimate_heur_vertical_distance(state: LunarLockoutState, center: int, pos: 
             vertical_pos = center + 1
         else:
             vertical_pos = center - 1
-        if not robot_is_here(state, (pos[0], vertical_pos)):
+        if M[pos[0]][vertical_pos]:
+            return distance
+        if not map[pos[0]][vertical_pos]:
             distance += 1
+        M[pos[0]][vertical_pos] = True
     return distance
-
-
-def robot_is_here(state: LunarLockoutState, pos: tuple) -> bool:
-    '''
-    Given a lunar lock put state and a position, return true if a robot exists at the given position
-    :param state:
-    :param pos:
-    :return:
-    '''
-    for rover in state.xanadus:
-        if rover == pos:
-            return True
-    for robot in state.robots:
-        if robot == pos:
-            return True
-    return False
 
 
 def fval_function(sN: sNode, weight: float):
@@ -184,19 +232,18 @@ def anytime_weighted_astar(initial_state, heur_fn, weight=4., timebound=2):
     '''implementation of weighted astar algorithm'''
     se = SearchEngine('custom')
     wrapped_fval_function = lambda sN: fval_function(sN, weight)
-    # goal_fn = lambda state: lockout_goal_state(state)
-    se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
+    # se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
     best_so_far = None
-
     search_stop_time = os.times()[0] + timebound
     while search_stop_time > os.times()[0] and weight >= 1:
+        se.init_search(initial_state, lockout_goal_state, heur_fn, wrapped_fval_function)
         result = se.search(search_stop_time - os.times()[0])
         if result:
             if best_so_far is None:
                 best_so_far = result
             if best_so_far.gval > result.gval:
                 best_so_far = result
-        weight = 1 + (weight - 1) * 2 / 3
+        weight = 1 + (weight - 1) * 4 / 5
     return best_so_far
 
 
