@@ -29,6 +29,7 @@ class ReflexAgent(Agent):
       headers.
     """
     direction_dict = {"Stop": (0, 0), "North": (0, 1), "South": (0, -1), "West": (-1, 0), "East": (1, 0)}
+
     def getAction(self, gameState):
         """
         You do not need to change this method, but you're welcome to.
@@ -265,36 +266,31 @@ class MinimaxAgent(MultiAgentSearchAgent):
         num_ghost = gameState.getNumAgents() - 1
         legal_moves = gameState.getLegalActions(0)
         best_action = legal_moves[0]
-        max_score = -float("inf")
-        next_agent = 1 if num_ghost != 0 else 0
-        for action in legal_moves:
-            successor_state = gameState.generateSuccessor(0, action)
-            tmp_score = self.DFMiniMax(successor_state, next_agent, num_ghost, 1)
-            if tmp_score > max_score:
-                max_score, best_action = tmp_score, action
+        _, tmp_action = self.pacmanBestScore(gameState, num_ghost, 0)
+        best_action = tmp_action if tmp_action is not None else best_action
         return best_action
-
 
     def DFMiniMax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int) -> int:
         ''' given a state and a player, return the max score it can get '''
         if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
             return self.evaluationFunction(game_state)
 
-        if agent_index == 0:            # pacman
-            return self.pacmanBestScore(game_state, num_ghost, depth_so_far)
-        else:                           # ghost
+        if agent_index == 0:  # pacman
+            return self.pacmanBestScore(game_state, num_ghost, depth_so_far)[0]
+        else:  # ghost
             return self.ghostBestScore(game_state, agent_index, num_ghost, depth_so_far)
 
     def pacmanBestScore(self, game_state, num_ghost: int, depth_so_far: int):
+        best_action = None
         legal_moves = game_state.getLegalActions(0)
         max_score = -float("inf")
-        next_agent = 1 if num_ghost != 0 else 0       # in case there is no ghost
+        next_agent = 1 if num_ghost != 0 else 0  # in case there is no ghost
         for action in legal_moves:
             successor_state = game_state.generateSuccessor(0, action)
             tmp_score = self.DFMiniMax(successor_state, next_agent, num_ghost, depth_so_far + 1)
             if tmp_score > max_score:
-                max_score = tmp_score
-        return max_score
+                max_score, best_action = tmp_score, action
+        return max_score, best_action
 
     def ghostBestScore(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
         legal_moves = game_state.getLegalActions(agent_index)
@@ -354,7 +350,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
     #             if tmp_score < min_score:
     #                 min_score, best_action = tmp_score, action
     #         return min_score, best_action
-
 
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
