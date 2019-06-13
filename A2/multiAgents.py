@@ -266,7 +266,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         num_ghost = gameState.getNumAgents() - 1
         legal_moves = gameState.getLegalActions(0)
         best_action = legal_moves[0]
-        _, tmp_action = self.pacmanBestScore(gameState, num_ghost, 0)
+        _, tmp_action = self.pacmanMiniMax(gameState, num_ghost, 0)
         best_action = tmp_action if tmp_action is not None else best_action
         return best_action
 
@@ -276,11 +276,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(game_state)
 
         if agent_index == 0:  # pacman
-            return self.pacmanBestScore(game_state, num_ghost, depth_so_far)[0]
+            return self.pacmanMiniMax(game_state, num_ghost, depth_so_far)[0]
         else:  # ghost
-            return self.ghostBestScore(game_state, agent_index, num_ghost, depth_so_far)
+            return self.ghostMiniMax(game_state, agent_index, num_ghost, depth_so_far)
 
-    def pacmanBestScore(self, game_state, num_ghost: int, depth_so_far: int):
+    def pacmanMiniMax(self, game_state, num_ghost: int, depth_so_far: int):
         best_action = None
         legal_moves = game_state.getLegalActions(0)
         max_score = -float("inf")
@@ -292,7 +292,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 max_score, best_action = tmp_score, action
         return max_score, best_action
 
-    def ghostBestScore(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
+    def ghostMiniMax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
         legal_moves = game_state.getLegalActions(agent_index)
         min_score = float("inf")
         next_agent = agent_index + 1 if agent_index != num_ghost else 0  # in case there is no ghost
@@ -316,7 +316,54 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        num_ghost = gameState.getNumAgents() - 1
+        legal_moves = gameState.getLegalActions(0)
+        best_action = legal_moves[0]
+        alpha = -float("inf")
+        beta = float("inf")
+        _, tmp_action = self.pacmanAlphaBeta(gameState, num_ghost, 0, alpha, beta)
+        best_action = tmp_action if tmp_action is not None else best_action
+        return best_action
+
+    def AlphaBetaPruning(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int, alpha: float,
+                         beta: float) -> float:
+        # if terminal state or depth reached limit, return current score
+        if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
+            return self.evaluationFunction(game_state)
+        if agent_index == 0:  # pacman
+            return self.pacmanAlphaBeta(game_state, num_ghost, depth_so_far, alpha, beta)[0]
+        else:  # ghost
+            return self.ghostAlphaBeta(game_state, agent_index, num_ghost, depth_so_far, alpha, beta)
+
+    def pacmanAlphaBeta(self, game_state, num_ghost: int, depth_so_far: int, alpha: float, beta: float):
+        # pacman corresponds to Max/alpha, it can only modify alpha's value
+        best_action = None
+        legal_moves = game_state.getLegalActions(0)
+        next_agent = 1 if num_ghost != 0 else 0  # in case there is no ghost
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(0, action)
+            tmp_score = self.AlphaBetaPruning(successor_state, next_agent, num_ghost, depth_so_far + 1, alpha, beta)
+            if tmp_score > alpha:
+                alpha, best_action = tmp_score, action
+            if beta <= alpha:
+                break
+        return alpha, best_action
+
+    def ghostAlphaBeta(self, game_state, agent_index, num_ghost: int, depth_so_far: int, alpha: float,
+                       beta: float) -> float:
+        # ghost corresponds to min/beta, it can only modify beta's value
+        legal_moves = game_state.getLegalActions(agent_index)
+        next_agent = agent_index + 1 if agent_index != num_ghost else 0  # in case there is no ghost
+        # if it's the last ghost on the last depth, +1 to depth_so_far to quit early in next DFMiniMax
+        next_depth = depth_so_far + 1 if agent_index == num_ghost and depth_so_far == self.depth else depth_so_far
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(agent_index, action)
+            tmp_score = self.AlphaBetaPruning(successor_state, next_agent, num_ghost, next_depth, alpha, beta)
+            if tmp_score < beta:
+                beta = tmp_score
+            if beta <= alpha:
+                break
+        return beta
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
