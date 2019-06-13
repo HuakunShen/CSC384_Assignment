@@ -305,52 +305,6 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 min_score = tmp_score
         return min_score
 
-    #     num_ghost = gameState.getNumAgents() - 1
-    #     score, action = self.DFMiniMax(gameState, "pacman", num_ghost, 0, 0)
-    #     return action
-    #
-    # def DFMiniMax(self, curr_game_state, player: str, num_ghost: int, ghost_index: int, depth_so_far: int):
-    #     # print("depth_so_far: ", depth_so_far)
-    #     if curr_game_state.isLose() or curr_game_state.isWin() or depth_so_far > self.depth:
-    #         return self.evaluationFunction(curr_game_state), None
-    #     # generate new states using legal moves
-    #     if player == "pacman":
-    #         # print("pacman at depth ", depth_so_far)
-    #         pacman_legal_moves = curr_game_state.getLegalActions(0)  # pacman legal moves
-    #         # pacman_successors = []  # list of game state after pacman's action
-    #         max_score = -float("inf")
-    #         best_action = None
-    #         for action in pacman_legal_moves:
-    #             successor_game_state = curr_game_state.generateSuccessor(0, action)
-    #             tmp_score, next_action = self.DFMiniMax(successor_game_state, "ghost", num_ghost, ghost_index + 1,
-    #                                                     depth_so_far + 1)
-    #             if tmp_score > max_score:
-    #                 max_score, best_action = tmp_score, action
-    #         return max_score, best_action
-    #
-    #
-    #
-    #     else:  # is ghost
-    #         # print("ghost ", ghost_index, " at depth ", depth_so_far)
-    #         ghost_legal_moves = curr_game_state.getLegalActions(ghost_index)
-    #         # ghost_successors = []  # list of game state after ghost's action
-    #         min_score = float("inf")
-    #         best_action = None
-    #         for action in ghost_legal_moves:
-    #             successor_game_state = curr_game_state.generateSuccessor(ghost_index, action)
-    #             if ghost_index == num_ghost:
-    #
-    #                 if depth_so_far == self.depth:
-    #                     depth_so_far += 1
-    #                 tmp_score, _ = self.DFMiniMax(successor_game_state, "pacman", num_ghost, 0,
-    #                                               depth_so_far)  # restart a new depth
-    #             else:
-    #                 tmp_score, _ = self.DFMiniMax(successor_game_state, "ghost", num_ghost, ghost_index + 1,
-    #                                               depth_so_far)
-    #             if tmp_score < min_score:
-    #                 min_score, best_action = tmp_score, action
-    #         return min_score, best_action
-
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
