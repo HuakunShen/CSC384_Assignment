@@ -323,6 +323,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         beta = float("inf")
         _, tmp_action = self.pacmanAlphaBeta(gameState, num_ghost, 0, alpha, beta)
         best_action = tmp_action if tmp_action is not None else best_action
+        if best_action == Directions.STOP:
+            print("STOP")
         return best_action
 
     def AlphaBetaPruning(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int, alpha: float,
@@ -379,7 +381,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        num_ghost = gameState.getNumAgents() - 1
+        legal_moves = gameState.getLegalActions(0)
+        best_action = legal_moves[0]
+        _, tmp_action = self.expectimax(gameState, 0, num_ghost, 0)
+        best_action = tmp_action if tmp_action is not None else best_action
+        return best_action
+
+    def expectimax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
+        best_move = None
+        if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
+            return self.evaluationFunction(game_state), best_move
+        value = -float("inf") if agent_index == 0 else float(0)
+        legal_moves = game_state.getLegalActions(agent_index)
+        next_agent = agent_index + 1 if agent_index != num_ghost else 0
+        next_depth = depth_so_far
+        if agent_index == 0 or (agent_index == num_ghost and depth_so_far == self.depth):
+            next_depth += 1
+        probability_per_ghost = 1.0 / float(num_ghost)
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(agent_index, action)
+            nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, next_depth)
+            if agent_index == 0 and value < nxt_val:
+                value, best_move = nxt_val, action
+            else:
+                value += float(probability_per_ghost) * float(nxt_val)
+        return value, best_move
+
 
 
 def betterEvaluationFunction(currentGameState):
@@ -390,7 +418,11 @@ def betterEvaluationFunction(currentGameState):
       DESCRIPTION: <write something here so we know what you did>
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    score = 0
+
+
+
+    return score
 
 
 # Abbreviation
