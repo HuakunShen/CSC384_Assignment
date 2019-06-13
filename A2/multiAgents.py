@@ -395,17 +395,17 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         value = -float("inf") if agent_index == 0 else float(0)
         legal_moves = game_state.getLegalActions(agent_index)
         next_agent = agent_index + 1 if agent_index != num_ghost else 0
-        next_depth = depth_so_far
+        # next_depth = depth_so_far
         if agent_index == 0 or (agent_index == num_ghost and depth_so_far == self.depth):
-            next_depth += 1
+            depth_so_far += 1
         probability_per_ghost = 1.0 / float(len(legal_moves))
         # print("prob: ", probability_per_ghost)
         for action in legal_moves:
             successor_state = game_state.generateSuccessor(agent_index, action)
-            nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, next_depth)
+            nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, depth_so_far)
             if agent_index == 0 and value < nxt_val:
                 value, best_move = nxt_val, action
-            else:
+            if agent_index != 0:
                 value += float(probability_per_ghost) * float(nxt_val)
         return value, best_move
 
