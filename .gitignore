@@ -2,3 +2,7 @@
 *.xml
 *.pyc
 *.json
+*.gz
+*.log
+*.aux
+writtenAnswers.pdf
