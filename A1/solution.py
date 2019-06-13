@@ -86,6 +86,13 @@ def heur_alternate(state: LunarLockoutState):
     return distance
 
 
+def find_outermost_rovers(state: LunarLockoutState) -> tuple:
+	result = None
+	
+	
+
+
+
 def heur_alternate_helper(state: LunarLockoutState, center: int, rover: tuple) -> int:
     distance = [0, 0]
     distance[0] += estimate_heur_horizontal_distance(state, center, rover)
