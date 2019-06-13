@@ -302,7 +302,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                     tmp_score, _ = self.DFMiniMax(successor_game_state, "ghost", num_ghost, ghost_index + 1,
                                                   depth_so_far)
                 if tmp_score < min_score:
-                    min_score, = tmp_score
+                    min_score, best_action = tmp_score, action
             return min_score, best_action
 
 
