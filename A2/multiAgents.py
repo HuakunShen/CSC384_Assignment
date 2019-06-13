@@ -267,16 +267,18 @@ class MinimaxAgent(MultiAgentSearchAgent):
         return action
 
     def DFMiniMax(self, curr_game_state, player: str, num_ghost: int, ghost_index: int, depth_so_far: int):
+        # print("depth_so_far: ", depth_so_far)
         if curr_game_state.isLose() or curr_game_state.isWin() or depth_so_far > self.depth:
             return self.evaluationFunction(curr_game_state), None
         # generate new states using legal moves
         if player == "pacman":
-            pacman_legal_moves = curr_game_state.getLegalPacmanActions()  # pacman legal moves
+            # print("pacman at depth ", depth_so_far)
+            pacman_legal_moves = curr_game_state.getLegalActions(0)  # pacman legal moves
             # pacman_successors = []  # list of game state after pacman's action
             max_score = -float("inf")
             best_action = None
             for action in pacman_legal_moves:
-                successor_game_state = curr_game_state.generatePacmanSuccessor(action)
+                successor_game_state = curr_game_state.generateSuccessor(0, action)
                 tmp_score, next_action = self.DFMiniMax(successor_game_state, "ghost", num_ghost, ghost_index + 1,
                                                         depth_so_far + 1)
                 if tmp_score > max_score:
@@ -286,6 +288,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
 
 
         else:  # is ghost
+            # print("ghost ", ghost_index, " at depth ", depth_so_far)
             ghost_legal_moves = curr_game_state.getLegalActions(ghost_index)
             # ghost_successors = []  # list of game state after ghost's action
             min_score = float("inf")
