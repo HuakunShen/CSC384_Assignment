@@ -167,15 +167,6 @@ class ReflexAgent(Agent):
             min_distance = min(tmp_distance, min_distance)
         return min_distance
 
-    def foodAround(self, new_food_list, newPos, successorGameState):
-        count_food_around = 0
-        offset_lst = [-2, -1, 0, 1, 2]
-        for offset_x in offset_lst:
-            for offset_y in offset_lst:
-                if successorGameState.hasFood(offset_x + newPos[0], offset_y + newPos[1]):
-                    count_food_around += 1
-        return count_food_around
-
     def sumOfFoodInActionDirectionRange(self, action, currentGameState, current_food_list, newFood, current_pos,
                                         direction):
         print("current_pos: " + str(current_pos))
@@ -410,21 +401,104 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         return value, best_move
 
 
-
 def betterEvaluationFunction(currentGameState):
     """
       Your extreme ghost-hunting, pellet-nabbing, food-gobbling, unstoppable
       evaluation function (question 5).
 
       DESCRIPTION: <write something here so we know what you did>
+      factors to consider:
+      1. adjacent food
+      2. closest food (Manhattan distance)
+      3. adjacent ghost => escape immediately
+      4. closest ghost distance
+      5. number of ghost within a specific range (range scale to the size of map)
+      6. number of food around the pacman (range scale to the size of map)
+      7. scare time (if > 0 => most ghost are scared)
     """
     "*** YOUR CODE HERE ***"
     score = 0
+    width = currentGameState.getFood().width
+    height = currentGameState.getFood().height
+    pacman_position = currentGameState.getPacmanPosition()
+    radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
+    ghost_positions = currentGameState.getGhostPositions()
 
+    # scared time
+    ghost_states = currentGameState.getGhostStates()
+    scared_times = [ghostState.scaredTimer for ghostState in ghost_states]
+    all_scared = True
+    total_scared_time = 0
+    for scared_time in scared_times:
+        if scared_time == 0:
+            all_scared = False
+            break
+        total_scared_time += scared_time
+    score += total_scared_time * 10
 
+    # if closest ghost is too close, escape
+    closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
+    if closest_ghost_distance <= radius and not all_scared:
+        return closest_ghost_distance
 
+    # num of food left, less is better, use reciprocal
+    current_num_food = currentGameState.getNumFood()
+    print("num food left: ", current_num_food)
+    if current_num_food == 0:
+        return float("inf")
+    else:
+        score += 1.0 / float(current_num_food) * 10000
+
+    # food around
+    # food_around = foodAround(pacman_position, currentGameState, 1) * 10
+    # if food_around == 0:
+    #     rand_val = random.randint(0, int(score))
+    #     score += rand_val
+    #     print("random added: ", rand_val)
+
+    print("score: ", score)
     return score
 
+
+def num_ghost_around(ghost_positions, pacman_position, radius: int):
+    num_ghost = 0
+    x_range = (pacman_position[0] - radius, pacman_position[0] + radius)
+    y_range = (pacman_position[1] - radius, pacman_position[1] + radius)
+    for ghost in ghost_positions:
+        if x_range[0] <= ghost[0] <= x_range[1] and y_range[0] <= ghost[1] <= y_range[1]:
+            num_ghost += 1
+    return num_ghost
+
+
+def foodAround(position, game_state, radius: int):
+    count_food_around = 0
+    offset_lst = []
+    # initialize offset_lst based on radius
+    for i in range(radius, 0, -1):
+        offset_lst.append(i)
+    for i in range(0, radius):
+        offset_lst.append(i)
+    for offset_x in offset_lst:
+        for offset_y in offset_lst:
+            if game_state.hasFood(offset_x + position[0], offset_y + position[1]):
+                count_food_around += 1
+    return count_food_around
+
+
+def closestFoodMDistance(position: tuple, food_list: list) -> int:
+    min_distance = float("inf")
+    for pos in food_list:
+        tmp_distance = manhattanDistance(position, pos)
+        min_distance = min(min_distance, tmp_distance)
+    return min_distance
+
+
+def closestGhostMDistance(ghost_positions, pacman_pos) -> int:
+    min_distance = float("inf")
+    for pos in ghost_positions:
+        tmp_distance = manhattanDistance(pos, pacman_pos)
+        min_distance = min(tmp_distance, min_distance)
+    return min_distance
 
 # Abbreviation
 better = betterEvaluationFunction
