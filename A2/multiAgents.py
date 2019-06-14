@@ -417,12 +417,16 @@ def betterEvaluationFunction(currentGameState):
       7. scare time (if > 0 => most ghost are scared)
     """
     "*** YOUR CODE HERE ***"
+    print("===============================================")
     score = 0
     width = currentGameState.getFood().width
     height = currentGameState.getFood().height
+    print("width: ", width, ". height: ", height)
     pacman_position = currentGameState.getPacmanPosition()
+    print("pacman position: ", pacman_position)
     radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
     ghost_positions = currentGameState.getGhostPositions()
+    print("food list: ", currentGameState.getFood().asList())
 
     # scared time
     ghost_states = currentGameState.getGhostStates()
@@ -447,17 +451,19 @@ def betterEvaluationFunction(currentGameState):
     if current_num_food == 0:
         return float("inf")
     else:
-        score += 1.0 / float(current_num_food) * 10000
+        # score += 1.0 / float(current_num_food) * 10000
+        score += width * height - current_num_food
 
     # food around
-    # food_around = foodAround(pacman_position, currentGameState, 1) * 10
+    food_around = foodAround(pacman_position, currentGameState, 1)
+    print("food around: ", food_around)
     # if food_around == 0:
-    #     rand_val = random.randint(0, int(score))
+    #     rand_val = random.randint(0, int(score / 10))
     #     score += rand_val
     #     print("random added: ", rand_val)
 
     print("score: ", score)
-    return score
+    return score + currentGameState.getScore()
 
 
 def num_ghost_around(ghost_positions, pacman_position, radius: int):
@@ -475,11 +481,13 @@ def foodAround(position, game_state, radius: int):
     offset_lst = []
     # initialize offset_lst based on radius
     for i in range(radius, 0, -1):
+        offset_lst.append(-i)
+    for i in range(0, radius + 1):
         offset_lst.append(i)
-    for i in range(0, radius):
-        offset_lst.append(i)
+    print("offset list: ", offset_lst)
     for offset_x in offset_lst:
         for offset_y in offset_lst:
+            print("position checked: ", (offset_x + position[0], offset_y + position[1]))
             if game_state.hasFood(offset_x + position[0], offset_y + position[1]):
                 count_food_around += 1
     return count_food_around
