@@ -1,11 +1,32 @@
 \documentclass[10pt]{article}
 
-
-
+\usepackage[margin=0.5in]{geometry}
+\title{A2 Written Answers}
+\author{Huakun Shen}
+\date{June 18th, 2019}
 
 \begin{document}
-\textbf{A2 Written Answers}
+\maketitle
+\section*{Question 2}
+\begin{enumerate}
+\item Pacman's decision of action depends on what action it predicts the ghost will take. It always predict that the ghosts plays the same way he did. Pacman could suicide if the ghosts don't move as it predicts.
+\end{enumerate}
+\section*{Question 3}
 \begin{enumerate}
 \item 
+	\begin{enumerate}
+		\item[(a)] In the best case scenario, alpha-beta could search to $2d$ of depth in the same amount of time.
+		\item[(b)] In the Worst case scenario, alpha-beta could search to $d$ of depth in the same amount of time. It is the same as searching with MiniMax without alpha-beta pruning.
+	\end{enumerate}
+\item \textbf{False}
+\end{enumerate}
+\section*{Question 4}
+\begin{enumerate}
+\item
+	\begin{enumerate}
+	\item[(a)] \textbf{\textit{True.}} Min nodes always pick the min value from their children, chance node's choice depends on the probability, but could never be smaller than the min value. The Max node picks the largest, max value from chance nodes must be greater than the max value from min nodes.
+	\item[(b)] \textbf{\textit{True.}} From $(a)$, we know that $v_M\leq v_E$ all the time. We also know that $v_M$ is the lowest value Max could get in the worst case assuming all chance nodes plays rationally like min nodes. Therefore, the payoff could never be lower than the $v_M$.
+	\item[(c)] \textbf{\textit{False.}} If in the worst case scenario, all change chance nodes plays rationally like min nodes unexpectedly, the Max node would eventually get a payoff of $v_M$, which is always smaller than or equal to $v_E$. Thus, we could get a payoff that's lower than $v_E$.
+	\end{enumerate}
 \end{enumerate}
 \end{document}

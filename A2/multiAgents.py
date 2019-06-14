@@ -167,15 +167,6 @@ class ReflexAgent(Agent):
             min_distance = min(tmp_distance, min_distance)
         return min_distance
 
-    def foodAround(self, new_food_list, newPos, successorGameState):
-        count_food_around = 0
-        offset_lst = [-2, -1, 0, 1, 2]
-        for offset_x in offset_lst:
-            for offset_y in offset_lst:
-                if successorGameState.hasFood(offset_x + newPos[0], offset_y + newPos[1]):
-                    count_food_around += 1
-        return count_food_around
-
     def sumOfFoodInActionDirectionRange(self, action, currentGameState, current_food_list, newFood, current_pos,
                                         direction):
         print("current_pos: " + str(current_pos))
@@ -266,7 +257,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
         num_ghost = gameState.getNumAgents() - 1
         legal_moves = gameState.getLegalActions(0)
         best_action = legal_moves[0]
-        _, tmp_action = self.pacmanBestScore(gameState, num_ghost, 0)
+        _, tmp_action = self.pacmanMiniMax(gameState, num_ghost, 0)
         best_action = tmp_action if tmp_action is not None else best_action
         return best_action
 
@@ -276,11 +267,11 @@ class MinimaxAgent(MultiAgentSearchAgent):
             return self.evaluationFunction(game_state)
 
         if agent_index == 0:  # pacman
-            return self.pacmanBestScore(game_state, num_ghost, depth_so_far)[0]
+            return self.pacmanMiniMax(game_state, num_ghost, depth_so_far)[0]
         else:  # ghost
-            return self.ghostBestScore(game_state, agent_index, num_ghost, depth_so_far)
+            return self.ghostMiniMax(game_state, agent_index, num_ghost, depth_so_far)
 
-    def pacmanBestScore(self, game_state, num_ghost: int, depth_so_far: int):
+    def pacmanMiniMax(self, game_state, num_ghost: int, depth_so_far: int):
         best_action = None
         legal_moves = game_state.getLegalActions(0)
         max_score = -float("inf")
@@ -292,7 +283,7 @@ class MinimaxAgent(MultiAgentSearchAgent):
                 max_score, best_action = tmp_score, action
         return max_score, best_action
 
-    def ghostBestScore(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
+    def ghostMiniMax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
         legal_moves = game_state.getLegalActions(agent_index)
         min_score = float("inf")
         next_agent = agent_index + 1 if agent_index != num_ghost else 0  # in case there is no ghost
@@ -316,7 +307,56 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
           Returns the minimax action using self.depth and self.evaluationFunction
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        num_ghost = gameState.getNumAgents() - 1
+        legal_moves = gameState.getLegalActions(0)
+        best_action = legal_moves[0]
+        alpha = -float("inf")
+        beta = float("inf")
+        _, tmp_action = self.pacmanAlphaBeta(gameState, num_ghost, 0, alpha, beta)
+        best_action = tmp_action if tmp_action is not None else best_action
+        if best_action == Directions.STOP:
+            print("STOP")
+        return best_action
+
+    def AlphaBetaPruning(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int, alpha: float,
+                         beta: float) -> float:
+        # if terminal state or depth reached limit, return current score
+        if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
+            return self.evaluationFunction(game_state)
+        if agent_index == 0:  # pacman
+            return self.pacmanAlphaBeta(game_state, num_ghost, depth_so_far, alpha, beta)[0]
+        else:  # ghost
+            return self.ghostAlphaBeta(game_state, agent_index, num_ghost, depth_so_far, alpha, beta)
+
+    def pacmanAlphaBeta(self, game_state, num_ghost: int, depth_so_far: int, alpha: float, beta: float):
+        # pacman corresponds to Max/alpha, it can only modify alpha's value
+        best_action = None
+        legal_moves = game_state.getLegalActions(0)
+        next_agent = 1 if num_ghost != 0 else 0  # in case there is no ghost
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(0, action)
+            tmp_score = self.AlphaBetaPruning(successor_state, next_agent, num_ghost, depth_so_far + 1, alpha, beta)
+            if tmp_score > alpha:
+                alpha, best_action = tmp_score, action
+            if beta <= alpha:
+                break
+        return alpha, best_action
+
+    def ghostAlphaBeta(self, game_state, agent_index, num_ghost: int, depth_so_far: int, alpha: float,
+                       beta: float) -> float:
+        # ghost corresponds to min/beta, it can only modify beta's value
+        legal_moves = game_state.getLegalActions(agent_index)
+        next_agent = agent_index + 1 if agent_index != num_ghost else 0  # in case there is no ghost
+        # if it's the last ghost on the last depth, +1 to depth_so_far to quit early in next DFMiniMax
+        next_depth = depth_so_far + 1 if agent_index == num_ghost and depth_so_far == self.depth else depth_so_far
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(agent_index, action)
+            tmp_score = self.AlphaBetaPruning(successor_state, next_agent, num_ghost, next_depth, alpha, beta)
+            if tmp_score < beta:
+                beta = tmp_score
+            if beta <= alpha:
+                break
+        return beta
 
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
@@ -332,7 +372,33 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           legal moves.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        num_ghost = gameState.getNumAgents() - 1
+        legal_moves = gameState.getLegalActions(0)
+        best_action = legal_moves[0]
+        _, best_action = self.expectimax(gameState, 0, num_ghost, 0)
+        # best_action = tmp_action if tmp_action is not None else best_action
+        return best_action
+
+    def expectimax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
+        best_move = None
+        if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
+            return self.evaluationFunction(game_state), best_move
+        value = -float("inf") if agent_index == 0 else float(0)
+        legal_moves = game_state.getLegalActions(agent_index)
+        next_agent = agent_index + 1 if agent_index != num_ghost else 0
+        # next_depth = depth_so_far
+        if agent_index == 0 or (agent_index == num_ghost and depth_so_far == self.depth):
+            depth_so_far += 1
+        probability_per_ghost = 1.0 / float(len(legal_moves))
+        # print("prob: ", probability_per_ghost)
+        for action in legal_moves:
+            successor_state = game_state.generateSuccessor(agent_index, action)
+            nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, depth_so_far)
+            if agent_index == 0 and value < nxt_val:
+                value, best_move = nxt_val, action
+            if agent_index != 0:
+                value += float(probability_per_ghost) * float(nxt_val)
+        return value, best_move
 
 
 def betterEvaluationFunction(currentGameState):
@@ -341,10 +407,106 @@ def betterEvaluationFunction(currentGameState):
       evaluation function (question 5).
 
       DESCRIPTION: <write something here so we know what you did>
+      factors to consider:
+      1. adjacent food
+      2. closest food (Manhattan distance)
+      3. adjacent ghost => escape immediately
+      4. closest ghost distance
+      5. number of ghost within a specific range (range scale to the size of map)
+      6. number of food around the pacman (range scale to the size of map)
+      7. scare time (if > 0 => most ghost are scared)
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    print("===============================================")
+    score = 0
+    width = currentGameState.getFood().width
+    height = currentGameState.getFood().height
+    print("width: ", width, ". height: ", height)
+    pacman_position = currentGameState.getPacmanPosition()
+    print("pacman position: ", pacman_position)
+    radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
+    ghost_positions = currentGameState.getGhostPositions()
+    print("food list: ", currentGameState.getFood().asList())
 
+    # scared time
+    ghost_states = currentGameState.getGhostStates()
+    scared_times = [ghostState.scaredTimer for ghostState in ghost_states]
+    all_scared = True
+    total_scared_time = 0
+    for scared_time in scared_times:
+        if scared_time == 0:
+            all_scared = False
+            break
+        total_scared_time += scared_time
+    score += total_scared_time * 10
+
+    # if closest ghost is too close, escape
+    closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
+    if closest_ghost_distance <= radius and not all_scared:
+        return closest_ghost_distance
+
+    # num of food left, less is better, use reciprocal
+    current_num_food = currentGameState.getNumFood()
+    print("num food left: ", current_num_food)
+    if current_num_food == 0:
+        return float("inf")
+    else:
+        # score += 1.0 / float(current_num_food) * 10000
+        score += width * height - current_num_food
+
+    # food around
+    food_around = foodAround(pacman_position, currentGameState, 1)
+    print("food around: ", food_around)
+    # if food_around == 0:
+    #     rand_val = random.randint(0, int(score / 10))
+    #     score += rand_val
+    #     print("random added: ", rand_val)
+
+    print("score: ", score)
+    return score + currentGameState.getScore()
+
+
+def num_ghost_around(ghost_positions, pacman_position, radius: int):
+    num_ghost = 0
+    x_range = (pacman_position[0] - radius, pacman_position[0] + radius)
+    y_range = (pacman_position[1] - radius, pacman_position[1] + radius)
+    for ghost in ghost_positions:
+        if x_range[0] <= ghost[0] <= x_range[1] and y_range[0] <= ghost[1] <= y_range[1]:
+            num_ghost += 1
+    return num_ghost
+
+
+def foodAround(position, game_state, radius: int):
+    count_food_around = 0
+    offset_lst = []
+    # initialize offset_lst based on radius
+    for i in range(radius, 0, -1):
+        offset_lst.append(-i)
+    for i in range(0, radius + 1):
+        offset_lst.append(i)
+    print("offset list: ", offset_lst)
+    for offset_x in offset_lst:
+        for offset_y in offset_lst:
+            print("position checked: ", (offset_x + position[0], offset_y + position[1]))
+            if game_state.hasFood(offset_x + position[0], offset_y + position[1]):
+                count_food_around += 1
+    return count_food_around
+
+
+def closestFoodMDistance(position: tuple, food_list: list) -> int:
+    min_distance = float("inf")
+    for pos in food_list:
+        tmp_distance = manhattanDistance(position, pos)
+        min_distance = min(min_distance, tmp_distance)
+    return min_distance
+
+
+def closestGhostMDistance(ghost_positions, pacman_pos) -> int:
+    min_distance = float("inf")
+    for pos in ghost_positions:
+        tmp_distance = manhattanDistance(pos, pacman_pos)
+        min_distance = min(tmp_distance, min_distance)
+    return min_distance
 
 # Abbreviation
 better = betterEvaluationFunction
