@@ -374,9 +374,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         "*** YOUR CODE HERE ***"
         num_ghost = gameState.getNumAgents() - 1
         legal_moves = gameState.getLegalActions(0)
-        best_action = legal_moves[0]
-        _, best_action = self.expectimax(gameState, 0, num_ghost, 0)
-        # best_action = tmp_action if tmp_action is not None else best_action
+        best_action = legal_moves[random.randint(0, len(legal_moves) - 1)]
+        _, tmp_action = self.expectimax(gameState, 0, num_ghost, 0)
+        best_action = tmp_action if tmp_action is not None else best_action
+        print("action: ", best_action)
         return best_action
 
     def expectimax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
@@ -394,8 +395,10 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         for action in legal_moves:
             successor_state = game_state.generateSuccessor(agent_index, action)
             nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, depth_so_far)
-            if agent_index == 0 and value < nxt_val:
+            if agent_index == 0 and value < nxt_val and action != Directions.STOP:
+                # if value < nxt_val or (value == nxt_val and nxt_move == Directions.STOP):
                 value, best_move = nxt_val, action
+                print("best_move: ", action)
             if agent_index != 0:
                 value += float(probability_per_ghost) * float(nxt_val)
         return value, best_move
@@ -419,51 +422,78 @@ def betterEvaluationFunction(currentGameState):
     "*** YOUR CODE HERE ***"
     print("===============================================")
     score = 0
-    width = currentGameState.getFood().width
-    height = currentGameState.getFood().height
+    current_food = currentGameState.getFood()
+    food_list = current_food.asList()
+    print("food list: ", food_list)
+    width = current_food.width
+    height = current_food.height
     print("width: ", width, ". height: ", height)
     pacman_position = currentGameState.getPacmanPosition()
     print("pacman position: ", pacman_position)
     radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
     ghost_positions = currentGameState.getGhostPositions()
-    print("food list: ", currentGameState.getFood().asList())
+    legal_moves = currentGameState.getLegalPacmanActions()
+    # print("food list: ", currentGameState.getFood().asList())
 
-    # scared time
-    ghost_states = currentGameState.getGhostStates()
-    scared_times = [ghostState.scaredTimer for ghostState in ghost_states]
-    all_scared = True
-    total_scared_time = 0
-    for scared_time in scared_times:
-        if scared_time == 0:
-            all_scared = False
-            break
-        total_scared_time += scared_time
-    score += total_scared_time * 10
+    # number of food left on map
+    num_food_left = current_food.count()
+    print("num_food_left: ", num_food_left)
+    # score += width * height - num_food_left + random.randint(0, 1)
+    score += (width * height - num_food_left) * 10
 
-    # if closest ghost is too close, escape
-    closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
-    if closest_ghost_distance <= radius and not all_scared:
-        return closest_ghost_distance
+    # check num of walls around
+    wall_adjacent = num_wall_adjacent(currentGameState, pacman_position)
+    print("num wall around: ", wall_adjacent)
+    if wall_adjacent == 3:
+        score = 0
 
-    # num of food left, less is better, use reciprocal
-    current_num_food = currentGameState.getNumFood()
-    print("num food left: ", current_num_food)
-    if current_num_food == 0:
-        return float("inf")
-    else:
-        # score += 1.0 / float(current_num_food) * 10000
-        score += width * height - current_num_food
 
-    # food around
-    food_around = foodAround(pacman_position, currentGameState, 1)
-    print("food around: ", food_around)
-    # if food_around == 0:
-    #     rand_val = random.randint(0, int(score / 10))
-    #     score += rand_val
-    #     print("random added: ", rand_val)
+
+    if currentGameState.isLose():
+        score = 0
+
+    if currentGameState.isWin():
+        score = float("inf")
 
     print("score: ", score)
-    return score + currentGameState.getScore()
+    return score
+
+
+direction_dict = {Directions.STOP: (0, 0), Directions.NORTH: (0, 1), Directions.SOUTH: (0, -1),
+                  Directions.WEST: (-1, 0), Directions.EAST: (1, 0)}
+
+
+def num_wall_adjacent(game_state, position):
+    count_wall = 0
+    if game_state.hasWall(position[0], position[1] + 1):
+        count_wall += 1
+    if game_state.hasWall(position[0], position[1] - 1):
+        count_wall += 1
+    if game_state.hasWall(position[0] + 1, position[1]):
+        count_wall += 1
+    if game_state.hasWall(position[0] - 1, position[1]):
+        count_wall += 1
+    return count_wall
+
+
+def closest_food_distance_straight_line(currentGameState, pacman_pos) -> int:
+    legal_moves = currentGameState.getLegalActions()
+    min_distance = float("inf")
+    for action in legal_moves:
+        if action == Directions.STOP:
+            continue
+        direction = direction_dict[action]
+        print("direction: ", direction)
+        cur_pos = pacman_pos
+        distance = 0
+        while not currentGameState.hasWall(cur_pos[0], cur_pos[1]):
+            print("position checked: ", cur_pos)
+            print("direction: ", direction)
+            if currentGameState.hasFood(cur_pos[0], cur_pos[1]):
+                min_distance = min(distance, min_distance)
+            cur_pos = (cur_pos[0] + direction[0], cur_pos[1] + direction[1])
+            distance += 1
+    return min_distance
 
 
 def num_ghost_around(ghost_positions, pacman_position, radius: int):
@@ -507,6 +537,7 @@ def closestGhostMDistance(ghost_positions, pacman_pos) -> int:
         tmp_distance = manhattanDistance(pos, pacman_pos)
         min_distance = min(tmp_distance, min_distance)
     return min_distance
+
 
 # Abbreviation
 better = betterEvaluationFunction
