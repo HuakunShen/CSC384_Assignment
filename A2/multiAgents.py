@@ -297,6 +297,7 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         # if terminal state or depth reached limit, return current score
         if depth_so_far > self.depth or game_state.isLose() or game_state.isWin():
             return self.evaluationFunction(game_state)
+            # return self.evaluationFunction(game_state)
         if agent_index == 0:  # pacman
             return self.pacmanAlphaBeta(game_state, num_ghost, depth_so_far, alpha, beta)[0]
         else:  # ghost
@@ -414,6 +415,10 @@ def betterEvaluationFunction(currentGameState):
     ghost_states = currentGameState.getGhostStates()
     scared_times_list = [ghostState.scaredTimer for ghostState in ghost_states]
 
+    if pacman_position in ghost_positions:
+        print("pacman hunt ghost at: ", pacman_position)
+        util.pause()
+
     # scare time for ghost hunting
     total_scared_time = 0
     all_scared = True
@@ -424,7 +429,8 @@ def betterEvaluationFunction(currentGameState):
 
     # check number of food left on the map
     num_food_left = current_food.count()
-    score += (width * height - num_food_left)
+    value_added = min(200, width * height) - num_food_left
+    score += value_added
 
     # if no food around pacman, go for the closest food on the map
     num_food_around = foodAround(pacman_position, currentGameState, 1)
@@ -439,7 +445,7 @@ def betterEvaluationFunction(currentGameState):
 
     # if ghosts are not scared, and some ghost is too close, set score to 0 to escape from the ghost as soon as possible
     if total_scared_time == 0 and closest_ghost_distance <= 1:
-        score = 0
+        score -= 100
 
     return score + currentGameState.getScore()
 
