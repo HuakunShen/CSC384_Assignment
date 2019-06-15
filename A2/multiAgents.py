@@ -64,7 +64,7 @@ class ReflexAgent(Agent):
         newScaredTimes holds the number of moves that each ghost will remain
         scared because of Pacman having eaten a power pellet.
 
-        Print out these variables to see what you're getting, then combine them
+        # Print out these variables to see what you're getting, then combine them
         to create a masterful evaluation function.
         """
         # Useful information you can extract from a GameState (pacman.py)
@@ -76,26 +76,26 @@ class ReflexAgent(Agent):
 
         "*** YOUR CODE HERE ***"
         # initialize some useful value
-        print("==================================================")
+        # print("==================================================")
         current_pos = currentGameState.getPacmanPosition()
-        print("current_pos=", current_pos)
-        print("newPos=", newPos)
+        # print("current_pos=", current_pos)
+        # print("newPos=", newPos)
         current_food_list = currentGameState.getFood().asList()
-        # print("current_food_list=", current_food_list)
+#         # print("current_food_list=", current_food_list)
         new_food_list = newFood.asList()
-        # print("new_food_list=", new_food_list)
+#         # print("new_food_list=", new_food_list)
         width = newFood.width
-        print("width=", width)
+        # print("width=", width)
         height = newFood.height
-        print("height=", height)
+        # print("height=", height)
         direction = self.direction_dict[action]
-        print("direction=", action, direction)
+        # print("direction=", action, direction)
         current_ghost_positions = currentGameState.getGhostPositions()
         new_ghost_positions = successorGameState.getGhostPositions()
         danger_zone_M_distance = max(1, width * height / 50)
-        print("danger_zone_M_distance=", danger_zone_M_distance)
+        # print("danger_zone_M_distance=", danger_zone_M_distance)
         closest_ghost_m_distance = self.closestGhostMDistance(new_ghost_positions, newPos)
-        # print("==================================================")
+#         # print("==================================================")
         score = 0
         # check scared time
         total_scared_time = 0
@@ -107,11 +107,11 @@ class ReflexAgent(Agent):
         # see if newPos has food in currentState's view
         food_in_new_pos_score = 0
         if currentGameState.hasFood(newPos[0], newPos[1]):
-            print("hasFood: True")
+            # print("hasFood: True")
             food_in_new_pos_score += 100
             score += food_in_new_pos_score
-        else:
-            print("hasFood: False")
+        # else:
+            # print("hasFood: False")
         if len(new_ghost_positions) == 0:
             sum_food_in_range = self.sumOfFoodInActionDirectionRange(action, currentGameState, current_food_list,
                                                                      newFood,
@@ -121,7 +121,7 @@ class ReflexAgent(Agent):
         # find closest food with manhattan distance
         new_pos_closest_food_m_distance = self.closestFoodMDistance(newPos, new_food_list)
         score += 1 / new_pos_closest_food_m_distance * 100  # reciprocal of distance, lower distance => higher score
-        print("score after closest food distance=", score)
+        # print("score after closest food distance=", score)
 
         # if in a zone, no food around, check greater range for food
         if score <= danger_zone_M_distance:
@@ -141,7 +141,7 @@ class ReflexAgent(Agent):
             count_wall += 1
         if successorGameState.hasWall(newPos[0] - 1, newPos[1]):
             count_wall += 1
-        print("num wall around: ", count_wall)
+        # print("num wall around: ", count_wall)
 
         if count_wall >= 3:
             return food_in_new_pos_score
@@ -149,8 +149,8 @@ class ReflexAgent(Agent):
 
         if closest_ghost_m_distance <= danger_zone_M_distance and total_scared_time == 0:
             score = min(score, closest_ghost_m_distance)
-        print("Score: ", score)
-        print("==================================================")
+        # print("Score: ", score)
+        # print("==================================================")
         return score
 
     def closestFoodMDistance(self, newPos: tuple, new_food_list: list) -> int:
@@ -169,7 +169,7 @@ class ReflexAgent(Agent):
 
     def sumOfFoodInActionDirectionRange(self, action, currentGameState, current_food_list, newFood, current_pos,
                                         direction):
-        print("current_pos: " + str(current_pos))
+        # print("current_pos: " + str(current_pos))
         search_range_x = (0, newFood.width)
         search_range_y = (0, newFood.height)
         if direction[0] == 1:
@@ -180,15 +180,15 @@ class ReflexAgent(Agent):
             search_range_y = (currentGameState.getPacmanPosition()[1] + 1, newFood.height)
         elif direction[1] == -1:
             search_range_y = (1, currentGameState.getPacmanPosition()[1] - 1)
-        print("width: ", newFood.width)
-        print("height: ", newFood.height)
-        print("x_range: " + str(search_range_x))
-        print("y_range: " + str(search_range_y))
-        # print("current_food_list: ", current_food_list)
+        # print("width: ", newFood.width)
+        # print("height: ", newFood.height)
+        # print("x_range: " + str(search_range_x))
+        # print("y_range: " + str(search_range_y))
+        # # print("current_food_list: ", current_food_list)
         sum_food_in_range = 0
         if action is not Directions.STOP:
             sum_food_in_range = self.sumFoodGivenRange(search_range_x, search_range_y, current_food_list)
-        print("sum_food_in_range: " + str(sum_food_in_range))
+        # print("sum_food_in_range: " + str(sum_food_in_range))
         return sum_food_in_range
 
     def sumFoodGivenRange(self, search_range_x, search_range_y, current_food_list):
@@ -314,8 +314,8 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         beta = float("inf")
         _, tmp_action = self.pacmanAlphaBeta(gameState, num_ghost, 0, alpha, beta)
         best_action = tmp_action if tmp_action is not None else best_action
-        if best_action == Directions.STOP:
-            print("STOP")
+        # if best_action == Directions.STOP:
+            # print("STOP")
         return best_action
 
     def AlphaBetaPruning(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int, alpha: float,
@@ -377,7 +377,7 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         best_action = legal_moves[random.randint(0, len(legal_moves) - 1)]
         _, tmp_action = self.expectimax(gameState, 0, num_ghost, 0)
         best_action = tmp_action if tmp_action is not None else best_action
-        print("action: ", best_action)
+        # print("action: ", best_action)
         return best_action
 
     def expectimax(self, game_state, agent_index: int, num_ghost: int, depth_so_far: int):
@@ -391,16 +391,23 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
         if agent_index == 0 or (agent_index == num_ghost and depth_so_far == self.depth):
             depth_so_far += 1
         probability_per_ghost = 1.0 / float(len(legal_moves))
-        # print("prob: ", probability_per_ghost)
+#         # print("prob: ", probability_per_ghost)
+
+        all_best_moves = []
         for action in legal_moves:
             successor_state = game_state.generateSuccessor(agent_index, action)
             nxt_val, nxt_move = self.expectimax(successor_state, next_agent, num_ghost, depth_so_far)
-            if agent_index == 0 and value < nxt_val and action != Directions.STOP:
-                # if value < nxt_val or (value == nxt_val and nxt_move == Directions.STOP):
-                value, best_move = nxt_val, action
-                print("best_move: ", action)
+            if agent_index == 0 and value <= nxt_val:
+                if value < nxt_val:
+                    all_best_moves = [action]
+                else:
+                    all_best_moves.append(action)
+                # value, best_move = nxt_val, action
+                value = nxt_val
             if agent_index != 0:
                 value += float(probability_per_ghost) * float(nxt_val)
+        if all_best_moves:
+            best_move = all_best_moves[random.randint(0, len(all_best_moves) - 1)]
         return value, best_move
 
 
@@ -420,33 +427,39 @@ def betterEvaluationFunction(currentGameState):
       7. scare time (if > 0 => most ghost are scared)
     """
     "*** YOUR CODE HERE ***"
-    print("===============================================")
+    # print("===============================================")
     score = 0
     current_food = currentGameState.getFood()
     food_list = current_food.asList()
-    print("food list: ", food_list)
+    # print("food list: ", food_list)
     width = current_food.width
     height = current_food.height
-    print("width: ", width, ". height: ", height)
+    # print("width: ", width, ". height: ", height)
     pacman_position = currentGameState.getPacmanPosition()
-    print("pacman position: ", pacman_position)
+    # print("pacman position: ", pacman_position)
     radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
     ghost_positions = currentGameState.getGhostPositions()
     legal_moves = currentGameState.getLegalPacmanActions()
-    # print("food list: ", currentGameState.getFood().asList())
+#     # print("food list: ", currentGameState.getFood().asList())
 
     # number of food left on map
     num_food_left = current_food.count()
-    print("num_food_left: ", num_food_left)
+    # print("num_food_left: ", num_food_left)
     # score += width * height - num_food_left + random.randint(0, 1)
     score += (width * height - num_food_left) * 10
 
     # check num of walls around
     wall_adjacent = num_wall_adjacent(currentGameState, pacman_position)
-    print("num wall around: ", wall_adjacent)
+    # print("num wall around: ", wall_adjacent)
     if wall_adjacent == 3:
         score = 0
 
+    # check closest food, closer is better, under the condition that there is not food around
+    num_food_around = foodAround(pacman_position, currentGameState, 1)
+    # print("num_food_around: ", num_food_around)
+    if num_food_around == 0:
+        closest_food_distance = closestFoodMDistance(pacman_position, food_list)
+        score -= closest_food_distance          # closer is better
 
 
     if currentGameState.isLose():
@@ -455,7 +468,7 @@ def betterEvaluationFunction(currentGameState):
     if currentGameState.isWin():
         score = float("inf")
 
-    print("score: ", score)
+    # print("score: ", score)
     return score
 
 
@@ -483,12 +496,12 @@ def closest_food_distance_straight_line(currentGameState, pacman_pos) -> int:
         if action == Directions.STOP:
             continue
         direction = direction_dict[action]
-        print("direction: ", direction)
+        # print("direction: ", direction)
         cur_pos = pacman_pos
         distance = 0
         while not currentGameState.hasWall(cur_pos[0], cur_pos[1]):
-            print("position checked: ", cur_pos)
-            print("direction: ", direction)
+            # print("position checked: ", cur_pos)
+            # print("direction: ", direction)
             if currentGameState.hasFood(cur_pos[0], cur_pos[1]):
                 min_distance = min(distance, min_distance)
             cur_pos = (cur_pos[0] + direction[0], cur_pos[1] + direction[1])
@@ -514,10 +527,10 @@ def foodAround(position, game_state, radius: int):
         offset_lst.append(-i)
     for i in range(0, radius + 1):
         offset_lst.append(i)
-    print("offset list: ", offset_lst)
+    # print("offset list: ", offset_lst)
     for offset_x in offset_lst:
         for offset_y in offset_lst:
-            print("position checked: ", (offset_x + position[0], offset_y + position[1]))
+            # print("position checked: ", (offset_x + position[0], offset_y + position[1]))
             if game_state.hasFood(offset_x + position[0], offset_y + position[1]):
                 count_food_around += 1
     return count_food_around
