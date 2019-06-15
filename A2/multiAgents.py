@@ -488,11 +488,11 @@ def betterEvaluationFunction(currentGameState):
     #     if closest_ghost_distance <= 1:
     #         score = 0
     closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
-    if total_scared_time > 0:
+    if closest_ghost_distance < max(width, height) / 2 and total_scared_time > 0:
         score *= 2
-    else:
-        if closest_ghost_distance <= 1:
-            score = 0
+
+    if not all_scared and closest_ghost_distance <= 1:
+        score = 0
 
 
 
