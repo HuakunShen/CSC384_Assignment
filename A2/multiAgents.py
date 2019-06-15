@@ -435,18 +435,17 @@ def betterEvaluationFunction(currentGameState):
     if currentGameState.isWin():
         score = float("inf")
         return score
-    print("===============================================")
+    # print("===============================================")
     # initialization of some useful data
-
     current_food = currentGameState.getFood()
     food_list = current_food.asList()
     width = current_food.width
     height = current_food.height
     pacman_position = currentGameState.getPacmanPosition()
-    print("pacman position: ", pacman_position)
+    # print("pacman position: ", pacman_position)
     radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
     ghost_positions = currentGameState.getGhostPositions()
-    print("ghost positions: ", ghost_positions)
+    # print("ghost positions: ", ghost_positions)
     ghost_states = currentGameState.getGhostStates()
     scared_times_list = [ghostState.scaredTimer for ghostState in ghost_states]
 
@@ -457,7 +456,7 @@ def betterEvaluationFunction(currentGameState):
         if scared_time == 0:
             all_scared = False
         total_scared_time += scared_time
-    print("total scared time: ", total_scared_time, "=== all scared: ", all_scared)
+    # print("total scared time: ", total_scared_time, "=== all scared: ", all_scared)
 
     # number of food left on map
     num_food_left = current_food.count()
@@ -506,8 +505,8 @@ def betterEvaluationFunction(currentGameState):
     # if wall_adjacent == 3:
     #     score /= 2
 
-    print("score: ", score)
-    return score
+    # print("score: ", score)
+    return score + currentGameState.getScore()
 
 
 direction_dict = {Directions.STOP: (0, 0), Directions.NORTH: (0, 1), Directions.SOUTH: (0, -1),
