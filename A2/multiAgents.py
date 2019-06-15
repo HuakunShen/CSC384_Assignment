@@ -463,7 +463,7 @@ def betterEvaluationFunction(currentGameState):
     # print("num_food_left: ", num_food_left)
     # score += width * height - num_food_left + random.randint(0, 1)
     # important to times 10 in the next line, scale up the importance of food left. Without it, AI wins much slower
-    score += (width * height - num_food_left) * 10
+    score += (width * height - num_food_left) * 5
 
     # check closest food, closer is better, under the condition that there is not food around
     num_food_around = foodAround(pacman_position, currentGameState, 1)
@@ -471,7 +471,7 @@ def betterEvaluationFunction(currentGameState):
     # priority given to eating foods around, if there is no food around, run towards the closest food
     if num_food_around == 0:
         closest_food_distance = closestFoodMDistance(pacman_position, food_list)
-        score -= closest_food_distance  # closer is better
+        score -= closest_food_distance / 2  # closer is better
 
 
 
