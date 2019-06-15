@@ -418,34 +418,29 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
       factors to consider:
-      1. adjacent food
-      2. closest food (Manhattan distance)
-      3. adjacent ghost => escape immediately
-      4. closest ghost distance
-      5. number of ghost within a specific range (range scale to the size of map)
-      6. number of food around the pacman (range scale to the size of map)
-      7. scare time (if > 0 => most ghost are scared)
+      1. Number of food left on map. Less is better => means eat more food => higher score
+      2. Scared time. More is better, when ghosts are scared, no need to escape from ghosts, but can hunt ghost
+      3. Number of food around. When There is food around, go for them (factor 1 will lead pacman to eat foods nearby)
+         If there is no food around pacman, find the distance(Manhattan) from the closest food.
+         Shorter distance is better.
+      4. Win and Lose. If current state is "Win", then absolutely go for it. If current state is "Lose", then absolutely
+         avoid it.
     """
     "*** YOUR CODE HERE ***"
     score = 0
     if currentGameState.isLose():
         score = -float("inf")
         return score
-
     if currentGameState.isWin():
         score = float("inf")
         return score
-    # print("===============================================")
     # initialization of some useful data
     current_food = currentGameState.getFood()
     food_list = current_food.asList()
     width = current_food.width
     height = current_food.height
     pacman_position = currentGameState.getPacmanPosition()
-    # print("pacman position: ", pacman_position)
-    radius = int(0.2619 * (float(width) * float(height)) ** 0.3777)
     ghost_positions = currentGameState.getGhostPositions()
-    # print("ghost positions: ", ghost_positions)
     ghost_states = currentGameState.getGhostStates()
     scared_times_list = [ghostState.scaredTimer for ghostState in ghost_states]
 
@@ -456,122 +451,27 @@ def betterEvaluationFunction(currentGameState):
         if scared_time == 0:
             all_scared = False
         total_scared_time += scared_time
-    # print("total scared time: ", total_scared_time, "=== all scared: ", all_scared)
 
-    # number of food left on map
+    # check number of food left on the map
     num_food_left = current_food.count()
-    # print("num_food_left: ", num_food_left)
-    # score += width * height - num_food_left + random.randint(0, 1)
-    # important to times 10 in the next line, scale up the importance of food left. Without it, AI wins much slower
     score += (width * height - num_food_left)
 
-    # check closest food, closer is better, under the condition that there is not food around
+    # if no food around pacman, go for the closest food on the map
     num_food_around = foodAround(pacman_position, currentGameState, 1)
-    # print("num_food_around: ", num_food_around)
-    # priority given to eating foods around, if there is no food around, run towards the closest food
     if num_food_around == 0:
         closest_food_distance = closestFoodMDistance(pacman_position, food_list)
         score -= closest_food_distance / 2  # closer is better
 
-
-
-
-
-
-    # if all_scared:  # want to eat the pill that scares ghost
-    #     score *= 2
-    #     ghost_is_in_view, ghost_in_view_pos = ghostInView(ghost_positions, pacman_position, currentGameState)
-    #     if ghost_is_in_view:
-    #         score *= 2
-    # elif total_scared_time == 0:  # not all scared
-    #     closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
-    #     if closest_ghost_distance <= 1:
-    #         score = 0
+    # if ghost is close enough and a capsule is around (taken by pacman in current state), then go for the capsule
     closest_ghost_distance = closestGhostMDistance(ghost_positions, pacman_position)
-    if closest_ghost_distance < max(width, height) / 2 and total_scared_time > 0:
+    if closest_ghost_distance < max(width, height) / 2 and all_scared:
         score *= 2
 
+    # if ghosts are not scared, and some ghost is too close, set score to 0 to escape from the ghost as soon as possible
     if total_scared_time == 0 and closest_ghost_distance <= 1:
         score = 0
 
-
-
-
-
-
-    # check num of walls around
-    # wall_adjacent = num_wall_adjacent(currentGameState, pacman_position)
-    # print("num wall around: ", wall_adjacent)
-    # if wall_adjacent == 3:
-    #     score /= 2
-
-    # print("score: ", score)
     return score + currentGameState.getScore()
-
-
-direction_dict = {Directions.STOP: (0, 0), Directions.NORTH: (0, 1), Directions.SOUTH: (0, -1),
-                  Directions.WEST: (-1, 0), Directions.EAST: (1, 0)}
-
-
-def ghostInView(ghost_positions, pacman_position, game_state):
-    cur_pos = pacman_position
-    for ghost_pos in ghost_positions:
-        if cur_pos[0] == ghost_pos[0]:  # in the same column
-            y_offset = 1 if cur_pos[1] < ghost_pos[1] else -1
-            while not game_state.hasWall(cur_pos[0], cur_pos[1]):
-                if cur_pos == ghost_pos:
-                    return True, ghost_pos
-                cur_pos = (cur_pos[0], cur_pos[1] + y_offset)
-        elif cur_pos[1] == ghost_pos[1]:  # in the same row
-            x_offset = 1 if cur_pos[0] < ghost_pos[0] else -1
-            while not game_state.hasWall(cur_pos[0], cur_pos[1]):
-                if cur_pos == ghost_pos:
-                    return True, ghost_pos
-                cur_pos = (cur_pos[0] + x_offset, cur_pos[1])
-    return False, None
-
-
-def num_wall_adjacent(game_state, position):
-    count_wall = 0
-    if game_state.hasWall(position[0], position[1] + 1):
-        count_wall += 1
-    if game_state.hasWall(position[0], position[1] - 1):
-        count_wall += 1
-    if game_state.hasWall(position[0] + 1, position[1]):
-        count_wall += 1
-    if game_state.hasWall(position[0] - 1, position[1]):
-        count_wall += 1
-    return count_wall
-
-
-def closest_food_distance_straight_line(currentGameState, pacman_pos) -> int:
-    legal_moves = currentGameState.getLegalActions()
-    min_distance = float("inf")
-    for action in legal_moves:
-        if action == Directions.STOP:
-            continue
-        direction = direction_dict[action]
-        # print("direction: ", direction)
-        cur_pos = pacman_pos
-        distance = 0
-        while not currentGameState.hasWall(cur_pos[0], cur_pos[1]):
-            # print("position checked: ", cur_pos)
-            # print("direction: ", direction)
-            if currentGameState.hasFood(cur_pos[0], cur_pos[1]):
-                min_distance = min(distance, min_distance)
-            cur_pos = (cur_pos[0] + direction[0], cur_pos[1] + direction[1])
-            distance += 1
-    return min_distance
-
-
-def num_ghost_around(ghost_positions, pacman_position, radius: int):
-    num_ghost = 0
-    x_range = (pacman_position[0] - radius, pacman_position[0] + radius)
-    y_range = (pacman_position[1] - radius, pacman_position[1] + radius)
-    for ghost in ghost_positions:
-        if x_range[0] <= ghost[0] <= x_range[1] and y_range[0] <= ghost[1] <= y_range[1]:
-            num_ghost += 1
-    return num_ghost
 
 
 def foodAround(position, game_state, radius: int):
