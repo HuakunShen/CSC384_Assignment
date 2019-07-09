@@ -1,4 +1,4 @@
-#Look for #IMPLEMENT tags in this file.
+# Look for #IMPLEMENT tags in this file.
 '''
 All models need to return a CSP object, and a list of lists of Variable objects 
 representing the board. The returned list of lists is used to access the 
@@ -32,13 +32,14 @@ The grid-only models do not need to encode the cage constraints.
 from cspbase import *
 import itertools
 
+
 def binary_ne_grid(kenken_grid):
-    ##IMPLEMENT
-    
+    pass
+
 
 def nary_ad_grid(kenken_grid):
-    ##IMPLEMENT 
-    
+    pass
+
 
 def kenken_csp_model(kenken_grid):
-    ##IMPLEMENT
+    pass
