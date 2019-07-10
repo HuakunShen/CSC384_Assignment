@@ -1,5 +1,5 @@
-#Look for #IMPLEMENT tags in this file. These tags indicate what has
-#to be implemented to complete problem solution.  
+# Look for #IMPLEMENT tags in this file. These tags indicate what has
+# to be implemented to complete problem solution.
 
 '''This file will contain different constraint propagators to be used within 
    bt_search.
@@ -60,10 +60,11 @@
          for gac we initialize the GAC queue with all constraints containing V.
    '''
 
+
 def prop_BT(csp, newVar=None):
     '''Do plain backtracking propagation. That is, do no 
     propagation at all. Just check fully instantiated constraints'''
-    
+
     if not newVar:
         return True, []
     for c in csp.get_cons_with_var(newVar):
@@ -76,30 +77,45 @@ def prop_BT(csp, newVar=None):
                 return False, []
     return True, []
 
+
 def prop_FC(csp, newVar=None):
     '''Do forward checking. That is check constraints with 
        only one uninstantiated variable. Remember to keep 
        track of all pruned variable,value pairs and return '''
-
     if not newVar:
+        # print(csp.get_all_cons())
         for c in csp.get_all_cons():
-            if len(c.get_scope() == 1):             # unary constraint
-                if c.get_n_unasgn() == 1:
-                    if not FCCheck(c):
-                        return
+            # print("check")
+            if len(c.get_scope()) == 1 and c.get_n_unasgn() == 1:  # unary constraint and no assigned
+                return FCCheck(c)
+    else:
+        # print(newVar)
+        print("check")
 
-
-    for c in csp.get_cons_with_var(newVar):
-        if c.get_n_unasgn() == 1:
-            if not FCCheck(c):
-
+        print(csp.get_cons_with_var(newVar))
+        for c in csp.get_cons_with_var(newVar):
+            if c.get_n_unasgn() == 1:
+                return FCCheck(c)
 
 
 def FCCheck(c):
     unassigned_var = c.get_unasgn_vars()[0]
+    pruned = []
+    vals = []
+    vars = c.get_scope()
+    for var in vars:
+        if var != unassigned_var:
+            vals.append(var.get_assigned_value())
     for val in unassigned_var.cur_domain():
+        tmp_vals = vals[:]
+        tmp_vals.append(val)
+        if not c.check(tmp_vals):
+            unassigned_var.prune_value(val)
+            pruned.append((unassigned_var, val))
 
-
+    if len(unassigned_var.cur_domain()) == 0:
+        return False, pruned
+    return True, pruned
 
 
 def prop_GAC(csp, newVar=None):
