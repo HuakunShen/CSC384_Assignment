@@ -83,19 +83,24 @@ def prop_FC(csp, newVar=None):
        only one uninstantiated variable. Remember to keep 
        track of all pruned variable,value pairs and return '''
     if not newVar:
-        # print(csp.get_all_cons())
         for c in csp.get_all_cons():
-            # print("check")
             if len(c.get_scope()) == 1 and c.get_n_unasgn() == 1:  # unary constraint and no assigned
                 return FCCheck(c)
+        return True, []
     else:
-        # print(newVar)
-        print("check")
-
-        print(csp.get_cons_with_var(newVar))
+        DWO = False
+        pruned = []
         for c in csp.get_cons_with_var(newVar):
             if c.get_n_unasgn() == 1:
-                return FCCheck(c)
+                result = FCCheck(c)
+                pruned.extend(result[1])
+                if not result[0]:
+                    DWO = True
+                    break
+        if DWO:
+            return False, pruned
+        else:
+            return True, pruned
 
 
 def FCCheck(c):
@@ -122,4 +127,9 @@ def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
-    pass
+    if not newVar:
+        pass
+
+    else:
+        pass
+
