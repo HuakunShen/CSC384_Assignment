@@ -30,8 +30,26 @@ val_ordering == a function with the following template
 
 
 def ord_mrv(csp):
-    pass
+    unassigned_vars = csp.get_all_unasgn_vars()
+    data = []
+    min_dom_size = float('inf')
+    mrv_var = None
+    for var in unassigned_vars:
+        if var.cur_domain_size() < min_dom_size:
+            mrv_var = var
+            min_dom_size = var.cur_domain_size()
+    return mrv_var
 
 
 def val_lcv(csp, var):
-    pass
+    values = var.cur_domain()
+    data = []
+    for val in values:
+        num_rule_out = 0
+        for constraint in csp.get_all_cons():
+            if not constraint.has_support(var, val):
+                num_rule_out += 1
+        data.append((val, num_rule_out))
+
+    data.sort(key=lambda tup: tup[1])
+

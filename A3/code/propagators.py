@@ -118,7 +118,7 @@ def FCCheck(c):
             unassigned_var.prune_value(val)
             pruned.append((unassigned_var, val))
 
-    if len(unassigned_var.cur_domain()) == 0:
+    if unassigned_var.cur_domain_size() == 0:
         return False, pruned
     return True, pruned
 
@@ -127,9 +127,31 @@ def prop_GAC(csp, newVar=None):
     '''Do GAC propagation. If newVar is None we do initial GAC enforce 
        processing all constraints. Otherwise we do GAC enforce with
        constraints containing newVar on GAC Queue'''
+    GACqueue = []
     if not newVar:
-        pass
-
+        for c in csp.get_all_cons():
+            GACqueue.append(c)
     else:
-        pass
+        for c in csp.get_cons_with_var(newVar):
+            GACqueue.append(c)
+    return GAC_enforce(GACqueue, csp)
+
+
+def GAC_enforce(GACqueue, csp):
+    pruned = []
+    while len(GACqueue) != 0:
+        curr_constraint = GACqueue.pop()
+        for var in curr_constraint.get_scope():
+            for val in var.cur_domain():
+                if not curr_constraint.has_support(var, val):
+                    pruned.append((var, val))
+                    var.prune_value(val)
+                    if var.cur_domain_size() == 0:
+                        GACqueue = []
+                        return False, pruned
+                    else:
+                        for c in csp.get_all_cons():
+                            if var in c.get_scope() and c not in GACqueue:
+                                GACqueue.append(c)
+    return True, pruned
 
