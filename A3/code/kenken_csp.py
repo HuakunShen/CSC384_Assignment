@@ -34,12 +34,149 @@ import itertools
 
 
 def binary_ne_grid(kenken_grid):
-    pass
+    board_dim = kenken_grid[0][0]
+    board_list = []
+    domain = list(range(1, board_dim + 1))  # construct domain for every variable
+    all_vars = []
+    for row in range(board_dim):
+        row = []
+        for col in range(board_dim):
+            var = Variable(str(row) + str(col), domain[:])
+            row.append(var)
+            all_vars.append(var)  # for csp construction
+        board_list.append(row)
+
+    # construct csp object
+    csp = CSP('binary_ne', all_vars)
+    # constraints
+    # rows
+    all_satisfied = []
+    tmp_iter = [domain, domain]
+    for t in itertools.product(*tmp_iter):  # construct a list of possible satisfied values
+        if t[0] != t[1]:
+            all_satisfied.append(t)
+
+    for row in board_list:
+        for i in range(board_dim):
+            first = row[i]
+            for j in range(board_dim):
+                if i != j:
+                    second = row[j]
+                    variables = [first, second]
+                    constraint = Constraint('C_Row' + str(i) + "_" + str(i) + str(j), variables)
+                    constraint.add_satisfying_tuples(all_satisfied)
+                    csp.add_constraint(constraint)
+
+    # cols
+    for col_index in range(board_dim):
+        col = []  # every col_index needs only one col list
+        for row in board_list:  # for each row, take the element at col_index and put into a col list
+            col.append(row[col_index])
+        for i in range(len(col)):
+            first = col[i]
+            for j in range(len(col)):
+                if i != j:
+                    second = col[j]
+                    variables = [first, second]
+                    constraint = Constraint('C_Col' + str(i) + "_" + str(i) + str(j), variables)
+                    constraint.add_satisfying_tuples(all_satisfied)
+                    csp.add_constraint(constraint)
+    return csp, board_list
 
 
 def nary_ad_grid(kenken_grid):
-    pass
+    board_dim = kenken_grid[0][0]
+    board_list = []
+    domain = list(range(1, board_dim + 1))  # construct domain for every variable
+    all_vars = []
+    for row in range(board_dim):
+        row = []
+        for col in range(board_dim):
+            var = Variable(str(row) + str(col), domain[:])
+            row.append(var)
+            all_vars.append(var)  # for csp construction
+        board_list.append(row)
+
+    # construct csp object
+    csp = CSP('nary_ad', all_vars)
+    all_satisfied = list(itertools.permutations(domain))
+    # all_satisfied = [tuple(range(1, board_dim + 1))]
+    # row
+    for i in range(len(board_list)):
+        row = board_list[i]
+        constraint = Constraint('C_Row' + str(i), row)
+        constraint.add_satisfying_tuples(all_satisfied)
+        csp.add_constraint(constraint)
+    # col
+    for col_index in range(board_dim):
+        col = []
+        for row in board_list:
+            col.append(row[col_index])
+        constraint = Constraint('C_Col' + str(col_index), col)
+        constraint.add_satisfying_tuples(all_satisfied)
+        csp.add_constraint(constraint)
+    return csp, board_list
+
+
+def make_constraint(board_list, dataset, i, domain):
+    operation_num = dataset[-1]
+    target = dataset[-2]
+    # construct variables list
+    var_list = []
+    for j in range(0, len(dataset) - 2):
+        var_row = int(str(dataset[j])[0])
+        var_col = int(str(dataset[j])[1])
+        var = board_list[var_row][var_col]
+        var_list.append(var)
+    all_permutations = list(itertools.permutations(domain, len(var_list)))
+    constraint = Constraint('C_' + str(i), var_list)
+    valid = []
+    if operation_num == 0:      # addition
+        for perm in all_permutations:
+            if sum(perm) == target:
+                valid.append(perm)
+    elif operation_num == 1:    # subtraction
+        for perm in all_permutations:
+            difference = perm[0]
+            for num_i in range(1, len(perm)):
+                difference -= perm[num_i]
+            if difference == target:
+                valid.append(perm)
+    elif operation_num == 2:    # division
+        for perm in all_permutations:
+            quotient = perm[0]
+            for num_i in range(1, len(perm)):
+                quotient /= perm[num_i]
+            if quotient == target:
+                valid.append(perm)
+    elif operation_num == 3:    # multiplication
+        for perm in all_permutations:
+            product = 1
+            for num in perm:
+                product *= num
+            if product == target:
+                valid.append(perm)
+
+    constraint.add_satisfying_tuples(valid)
+    return constraint
 
 
 def kenken_csp_model(kenken_grid):
-    pass
+    board_dim = kenken_grid[0][0]
+    domain = list(range(1, board_dim + 1))  # construct domain for every variable
+    csp, board_list = binary_ne_grid(kenken_grid)
+    # add kenken constraints
+    for i in range(1, len(kenken_grid)):
+        dataset = kenken_grid[i]
+        if len(dataset) == 2:
+            target = dataset[-1]
+            var_row = int(str(dataset[0])[0])
+            var_col = int(str(dataset[0])[1])
+            var = board_list[var_row][var_col]
+            constraint = Constraint('C_' + str(i), var)
+            constraint.add_satisfying_tuples([[target]])
+            csp.add_constraint(constraint)
+        elif len(dataset) > 2:
+            constraint = make_constraint(board_list, dataset, i, domain)
+            csp.add_constraint(constraint)
+    return csp, board_list

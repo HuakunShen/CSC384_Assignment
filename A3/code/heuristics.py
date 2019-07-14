@@ -42,14 +42,20 @@ def ord_mrv(csp):
 
 
 def val_lcv(csp, var):
-    values = var.cur_domain()
     data = []
-    for val in values:
-        num_rule_out = 0
-        for constraint in csp.get_all_cons():
-            if not constraint.has_support(var, val):
-                num_rule_out += 1
-        data.append((val, num_rule_out))
-
+    for val in var.cur_domain():
+        data.append([val, 0])
+    for constraint in csp.get_cons_with_var(var):
+        for dataset in data:
+            val = dataset[0]
+            var.assign(val)
+            for other_var in constraint.get_unasgn_vars():
+                for other_var_val in other_var.cur_domain():
+                    if constraint.has_support(other_var, other_var_val):
+                        dataset[1] += 1
+            var.unassign()
     data.sort(key=lambda tup: tup[1])
-
+    result = []
+    for dataset in data:
+        result.append(dataset[0])
+    return result
