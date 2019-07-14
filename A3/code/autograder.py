@@ -24,22 +24,26 @@ def print_kenken_soln(var_array):
 if __name__ == "__main__":
 
     if test_props:
+        i = 0
         for b in boards:
-            print("\nSolving board")
-            # csp, var_array = binary_ne_grid(b)
-            csp, var_array = nary_ad_grid(b)
-            # csp, var_array = kenken_csp_model(b)
-            solver = BT(csp)
-            print("=======================================================")
-            print("FC")
-            # solver.bt_search(prop_FC)
-            # solver.bt_search(prop_BT)
+            # if i == 0:
+            if 1:
+                i += 1
+                print("\nSolving board")
+                # csp, var_array = binary_ne_grid(b)
+                # csp, var_array = nary_ad_grid(b)
+                csp, var_array = kenken_csp_model(b)
+                solver = BT(csp)
+                print("=======================================================")
+                print("FC")
+                # solver.bt_search(prop_FC)
+                # solver.bt_search(prop_BT)
 
-            # print("GAC")
-            solver.bt_search(prop_GAC)
-            print("Solution")
-            print_kenken_soln(var_array)
-
+                # print("GAC")
+                solver.bt_search(prop_GAC)
+                print("Solution")
+                print_kenken_soln(var_array)
+            i += 1
     if test_ord_mrv:
 
         a = Variable('A', [1])

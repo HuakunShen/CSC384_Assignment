@@ -38,10 +38,10 @@ def binary_ne_grid(kenken_grid):
     board_list = []
     domain = list(range(1, board_dim + 1))  # construct domain for every variable
     all_vars = []
-    for row in range(board_dim):
+    for row_i in range(board_dim):
         row = []
         for col in range(board_dim):
-            var = Variable(str(row) + str(col), domain[:])
+            var = Variable(str(row_i + 1) + str(col + 1), domain[:])
             row.append(var)
             all_vars.append(var)  # for csp construction
         board_list.append(row)
@@ -89,10 +89,10 @@ def nary_ad_grid(kenken_grid):
     board_list = []
     domain = list(range(1, board_dim + 1))  # construct domain for every variable
     all_vars = []
-    for row in range(board_dim):
+    for row_i in range(board_dim):
         row = []
         for col in range(board_dim):
-            var = Variable(str(row) + str(col), domain[:])
+            var = Variable(str(row_i + 1) + str(col + 1), domain[:])
             row.append(var)
             all_vars.append(var)  # for csp construction
         board_list.append(row)
@@ -123,34 +123,45 @@ def make_constraint(board_list, dataset, i, domain):
     target = dataset[-2]
     # construct variables list
     var_list = []
+    # print(dataset)
     for j in range(0, len(dataset) - 2):
-        var_row = int(str(dataset[j])[0])
-        var_col = int(str(dataset[j])[1])
+        var_row = int(str(dataset[j])[0]) - 1
+        var_col = int(str(dataset[j])[1]) - 1
+        # print("row: " + str(var_row), "col: " + str(var_col))
         var = board_list[var_row][var_col]
         var_list.append(var)
-    all_permutations = list(itertools.permutations(domain, len(var_list)))
+    vars_domains = []
+    for j in range(0, len(var_list)):
+        vars_domains.append(domain[:])
+    all_combinations = list(itertools.product(*vars_domains))
     constraint = Constraint('C_' + str(i), var_list)
     valid = []
     if operation_num == 0:      # addition
-        for perm in all_permutations:
+        for perm in all_combinations:
             if sum(perm) == target:
                 valid.append(perm)
     elif operation_num == 1:    # subtraction
-        for perm in all_permutations:
+        for perm in all_combinations:
             difference = perm[0]
             for num_i in range(1, len(perm)):
                 difference -= perm[num_i]
             if difference == target:
-                valid.append(perm)
+                all_perm_valid = list(itertools.permutations(perm, len(perm)))
+                for element in all_perm_valid:
+                    if element not in valid:
+                        valid.append(element)
     elif operation_num == 2:    # division
-        for perm in all_permutations:
+        for perm in all_combinations:
             quotient = perm[0]
             for num_i in range(1, len(perm)):
                 quotient /= perm[num_i]
             if quotient == target:
-                valid.append(perm)
+                all_perm_valid = list(itertools.permutations(perm, len(perm)))
+                for element in all_perm_valid:
+                    if element not in valid:
+                        valid.append(element)
     elif operation_num == 3:    # multiplication
-        for perm in all_permutations:
+        for perm in all_combinations:
             product = 1
             for num in perm:
                 product *= num

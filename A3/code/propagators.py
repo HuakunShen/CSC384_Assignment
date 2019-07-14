@@ -147,7 +147,8 @@ def GAC_enforce(GACqueue, csp):
                     pruned.append((var, val))
                     var.prune_value(val)
                     if var.cur_domain_size() == 0:
-                        GACqueue = []
+                        while len(GACqueue) != 0:
+                            GACqueue.pop()
                         return False, pruned
                     else:
                         for c in csp.get_all_cons():
