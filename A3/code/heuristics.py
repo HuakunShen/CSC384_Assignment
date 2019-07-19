@@ -31,7 +31,6 @@ val_ordering == a function with the following template
 
 def ord_mrv(csp):
     unassigned_vars = csp.get_all_unasgn_vars()
-    data = []
     min_dom_size = float('inf')
     mrv_var = None
     for var in unassigned_vars:

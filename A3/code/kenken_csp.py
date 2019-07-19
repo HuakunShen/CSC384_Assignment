@@ -129,44 +129,50 @@ def make_constraint(board_list, dataset, i, domain):
         var_col = int(str(dataset[j])[1]) - 1
         var = board_list[var_row][var_col]
         var_list.append(var)
-    vars_domains = []
-    for j in range(0, len(var_list)):
-        vars_domains.append(domain[:])
-    all_combinations = list(itertools.product(*vars_domains))
+    all_combinations = list(itertools.combinations_with_replacement(domain[:], len(var_list)))
+
     constraint = Constraint('C_' + str(i), var_list)
     valid = []
-    if operation_num == 0:      # addition
-        for perm in all_combinations:
-            if sum(perm) == target:
-                valid.append(perm)
-    elif operation_num == 1:    # subtraction
-        for perm in all_combinations:
-            difference = perm[0]
-            for num_i in range(1, len(perm)):
-                difference -= perm[num_i]
-            if difference == target:
-                all_perm_valid = list(itertools.permutations(perm, len(perm)))
-                for element in all_perm_valid:
-                    if element not in valid:
-                        valid.append(element)
-    elif operation_num == 2:    # division
-        for perm in all_combinations:
-            quotient = perm[0]
-            for num_i in range(1, len(perm)):
-                quotient /= perm[num_i]
-            if quotient == target:
-                all_perm_valid = list(itertools.permutations(perm, len(perm)))
-                for element in all_perm_valid:
-                    if element not in valid:
-                        valid.append(element)
-    elif operation_num == 3:    # multiplication
-        for perm in all_combinations:
+
+    if operation_num == 0:  # addition
+        # addition: order does not affect sum
+
+        for comb in all_combinations:
+            if sum(comb) == target:
+                valid.extend(list(itertools.permutations(comb, len(comb))))
+                # valid.append(comb)
+    elif operation_num == 1:  # subtraction
+        for comb in all_combinations:
+            for i in range(len(comb)):
+                difference = 0
+                for j in range(len(comb)):
+                    if j == i:
+                        difference += comb[j]
+                    else:
+                        difference -= comb[j]
+            # difference = comb[-1] - sum(comb[0: -1])    # comb's last element is always the largest in our case
+                if difference == target:
+                    valid.extend(list(itertools.permutations(comb, len(comb))))
+    elif operation_num == 2:  # division
+        for comb in all_combinations:
+            for i in range(len(comb)):
+                quotient = 1.0
+                for j in range(len(comb)):
+                    if j == i:
+                        quotient *= comb[j]
+                    else:
+                        quotient /= comb[j]
+                if quotient == target:
+                    valid.extend(list(itertools.permutations(comb, len(comb))))
+
+    elif operation_num == 3:  # multiplication
+        for comb in all_combinations:
             product = 1
-            for num in perm:
+            for num in comb:
                 product *= num
             if product == target:
-                valid.append(perm)
-
+                valid.extend(list(itertools.permutations(comb, len(comb))))
+    valid = list(dict.fromkeys(valid))
     constraint.add_satisfying_tuples(valid)
     return constraint
 
@@ -175,6 +181,7 @@ def kenken_csp_model(kenken_grid):
     board_dim = kenken_grid[0][0]
     domain = list(range(1, board_dim + 1))  # construct domain for every variable
     csp, board_list = binary_ne_grid(kenken_grid)
+    # csp, board_list = nary_ad_grid(kenken_grid)
     # add kenken constraints
     for i in range(1, len(kenken_grid)):
         dataset = kenken_grid[i]
