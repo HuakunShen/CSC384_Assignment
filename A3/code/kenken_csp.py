@@ -64,25 +64,7 @@ def binary_ne_grid(kenken_grid):
             constraint = Constraint('C_Row' + str(row_i), comb)
             constraint.add_satisfying_tuples(all_satisfied)
             csp.add_constraint(constraint)
-        # for i in range(board_dim):
-        #     first = row[i]
-        #     for j in range(board_dim):
-        #         if i != j:
-        #             second = row[j]
-        #             variables = [first, second]
-        #             constraint = Constraint('C_Row' + str(i) + "_" + str(i) + str(j), variables)
-        #             constraint.add_satisfying_tuples(all_satisfied)
-        #             csp.add_constraint(constraint)
-
     # cols
-    for row_i in range(board_dim):
-        row = board_list[row_i]
-        all_combination = list(itertools.combinations(row, 2))
-        for comb in all_combination:
-            constraint = Constraint('C_Row' + str(row_i), comb)
-            constraint.add_satisfying_tuples(all_satisfied)
-            csp.add_constraint(constraint)
-
     for col_index in range(board_dim):
         col = []  # every col_index needs only one col list
         for row in board_list:  # for each row, take the element at col_index and put into a col list
