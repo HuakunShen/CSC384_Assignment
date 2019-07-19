@@ -129,43 +129,40 @@ def make_constraint(board_list, dataset, i, domain):
         var_col = int(str(dataset[j])[1]) - 1
         var = board_list[var_row][var_col]
         var_list.append(var)
-    all_combinations = list(itertools.combinations_with_replacement(domain[:], len(var_list)))
 
     constraint = Constraint('C_' + str(i), var_list)
     valid = []
 
     if operation_num == 0:  # addition
         # addition: order does not affect sum
+        all_combinations = list(itertools.combinations_with_replacement(domain, len(var_list)))
 
         for comb in all_combinations:
             if sum(comb) == target:
                 valid.extend(list(itertools.permutations(comb, len(comb))))
                 # valid.append(comb)
     elif operation_num == 1:  # subtraction
+        all_combinations = list(itertools.product(domain, repeat=len(var_list)))
         for comb in all_combinations:
-            for i in range(len(comb)):
-                difference = 0
-                for j in range(len(comb)):
-                    if j == i:
-                        difference += comb[j]
-                    else:
-                        difference -= comb[j]
-            # difference = comb[-1] - sum(comb[0: -1])    # comb's last element is always the largest in our case
+            if comb not in valid:
+                difference = comb[0]
+                for i in range(1, len(comb)):
+                    difference -= comb[i]
                 if difference == target:
                     valid.extend(list(itertools.permutations(comb, len(comb))))
     elif operation_num == 2:  # division
+        all_combinations = list(itertools.product(domain, repeat=len(var_list)))
         for comb in all_combinations:
-            for i in range(len(comb)):
-                quotient = 1.0
-                for j in range(len(comb)):
-                    if j == i:
-                        quotient *= comb[j]
-                    else:
-                        quotient /= comb[j]
+            if comb not in valid:
+                quotient = comb[0]
+                for i in range(1, len(comb)):
+                    quotient /= comb[i]
                 if quotient == target:
                     valid.extend(list(itertools.permutations(comb, len(comb))))
 
     elif operation_num == 3:  # multiplication
+        all_combinations = list(itertools.combinations_with_replacement(domain, len(var_list)))
+
         for comb in all_combinations:
             product = 1
             for num in comb:

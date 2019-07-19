@@ -88,7 +88,6 @@ def prop_FC(csp, newVar=None):
                 return FCCheck(c)
         return True, []
     else:
-        dwo = False
         pruned = []
         for c in csp.get_cons_with_var(newVar):
             if c.get_n_unasgn() == 1:
@@ -96,34 +95,27 @@ def prop_FC(csp, newVar=None):
                 pruned.extend(result[1])
                 if not result[0]:
                     # some constraint is violated, doesn't work
-                    dwo = True
-                    break
-        if dwo:
-            return False, pruned
-        else:
-            return True, pruned
+                    return False, pruned
+        return True, pruned
 
 
 def FCCheck(c):
     unassigned_var = c.get_unasgn_vars()[0]
     pruned = []
-    vals = []
+    values = []
     variables = c.get_scope()
     index_of_unassigned = 0
     for i in range(len(variables)):
         var = variables[i]
         if var == unassigned_var:
             index_of_unassigned = i
-        vals.append(var.get_assigned_value())
+        values.append(var.get_assigned_value())
     for val in unassigned_var.cur_domain():
-        unassigned_var.assign(val)
-        tmp_vals = vals[:]
-        tmp_vals[index_of_unassigned] = val
-        # tmp_vals.append(val)
-        if not c.check(tmp_vals):
+        values[index_of_unassigned] = val
+        if not c.check(values):
             unassigned_var.prune_value(val)
             pruned.append((unassigned_var, val))
-        unassigned_var.unassign()
+            pruned.append((unassigned_var, val))
     if unassigned_var.cur_domain_size() == 0:
         return False, pruned
     return True, pruned
