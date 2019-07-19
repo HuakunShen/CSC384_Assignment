@@ -51,36 +51,56 @@ def binary_ne_grid(kenken_grid):
     # constraints
     # rows
     all_satisfied = []
-    tmp_iter = [domain, domain]
-    for t in itertools.product(*tmp_iter):  # construct a list of possible satisfied values
+    # tmp_iter = [domain, domain]
+    all_permutation = itertools.permutations(domain, 2)          # construct a list of possible satisfied values
+    for t in all_permutation:
         if t[0] != t[1]:
             all_satisfied.append(t)
 
-    for row in board_list:
-        for i in range(board_dim):
-            first = row[i]
-            for j in range(board_dim):
-                if i != j:
-                    second = row[j]
-                    variables = [first, second]
-                    constraint = Constraint('C_Row' + str(i) + "_" + str(i) + str(j), variables)
-                    constraint.add_satisfying_tuples(all_satisfied)
-                    csp.add_constraint(constraint)
+    for row_i in range(len(board_list)):
+        row = board_list[row_i]
+        all_combination = list(itertools.combinations(row, 2))
+        for comb in all_combination:
+            constraint = Constraint('C_Row' + str(row_i), comb)
+            constraint.add_satisfying_tuples(all_satisfied)
+            csp.add_constraint(constraint)
+        # for i in range(board_dim):
+        #     first = row[i]
+        #     for j in range(board_dim):
+        #         if i != j:
+        #             second = row[j]
+        #             variables = [first, second]
+        #             constraint = Constraint('C_Row' + str(i) + "_" + str(i) + str(j), variables)
+        #             constraint.add_satisfying_tuples(all_satisfied)
+        #             csp.add_constraint(constraint)
 
     # cols
+    for row_i in range(board_dim):
+        row = board_list[row_i]
+        all_combination = list(itertools.combinations(row, 2))
+        for comb in all_combination:
+            constraint = Constraint('C_Row' + str(row_i), comb)
+            constraint.add_satisfying_tuples(all_satisfied)
+            csp.add_constraint(constraint)
+
     for col_index in range(board_dim):
         col = []  # every col_index needs only one col list
         for row in board_list:  # for each row, take the element at col_index and put into a col list
             col.append(row[col_index])
-        for i in range(len(col)):
-            first = col[i]
-            for j in range(len(col)):
-                if i != j:
-                    second = col[j]
-                    variables = [first, second]
-                    constraint = Constraint('C_Col' + str(i) + "_" + str(i) + str(j), variables)
-                    constraint.add_satisfying_tuples(all_satisfied)
-                    csp.add_constraint(constraint)
+        all_combination = list(itertools.combinations(col, 2))
+        for comb in all_combination:
+            constraint = Constraint('C_Col' + str(col_index), comb)
+            constraint.add_satisfying_tuples(all_satisfied)
+            csp.add_constraint(constraint)
+        # for i in range(len(col)):
+        #     first = col[i]
+        #     for j in range(len(col)):
+        #         if i != j:
+        #             second = col[j]
+        #             variables = [first, second]
+        #             constraint = Constraint('C_Col' + str(i) + "_" + str(i) + str(j), variables)
+        #             constraint.add_satisfying_tuples(all_satisfied)
+        #             csp.add_constraint(constraint)
     return csp, board_list
 
 
