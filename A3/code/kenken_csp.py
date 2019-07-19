@@ -87,8 +87,9 @@ def binary_ne_grid(kenken_grid):
 def nary_ad_grid(kenken_grid):
     board_dim = kenken_grid[0][0]
     board_list = []
-    domain = list(range(1, board_dim + 1))  # construct domain for every variable
+    domain = list(range(1, board_dim + 1))  # construct domain for every variable, is every number initially
     all_vars = []
+    # put every vars into board_list, board_list is 2-dimensional
     for row_i in range(board_dim):
         row = []
         for col in range(board_dim):
@@ -97,12 +98,11 @@ def nary_ad_grid(kenken_grid):
             all_vars.append(var)  # for csp construction
         board_list.append(row)
 
-    # construct csp object
+    # construct csp object containing every variable created in board_list
     csp = CSP('nary_ad', all_vars)
     all_satisfied = list(itertools.permutations(domain))
-    # all_satisfied = [tuple(range(1, board_dim + 1))]
     # row
-    for i in range(len(board_list)):
+    for i in range(board_dim):
         row = board_list[i]
         constraint = Constraint('C_Row' + str(i), row)
         constraint.add_satisfying_tuples(all_satisfied)
@@ -110,6 +110,7 @@ def nary_ad_grid(kenken_grid):
     # col
     for col_index in range(board_dim):
         col = []
+        # add element at col_index in very row into col, to construct a column
         for row in board_list:
             col.append(row[col_index])
         constraint = Constraint('C_Col' + str(col_index), col)
@@ -123,11 +124,9 @@ def make_constraint(board_list, dataset, i, domain):
     target = dataset[-2]
     # construct variables list
     var_list = []
-    # print(dataset)
     for j in range(0, len(dataset) - 2):
         var_row = int(str(dataset[j])[0]) - 1
         var_col = int(str(dataset[j])[1]) - 1
-        # print("row: " + str(var_row), "col: " + str(var_col))
         var = board_list[var_row][var_col]
         var_list.append(var)
     vars_domains = []

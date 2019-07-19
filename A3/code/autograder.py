@@ -26,24 +26,22 @@ if __name__ == "__main__":
     if test_props:
         i = 0
         for b in boards:
-            # if i == 0:
-            if 1:
+            if i != 2:
                 i += 1
-                print("\nSolving board")
-                # csp, var_array = binary_ne_grid(b)
-                # csp, var_array = nary_ad_grid(b)
-                csp, var_array = kenken_csp_model(b)
-                solver = BT(csp)
-                print("=======================================================")
-                print("FC")
-                # solver.bt_search(prop_FC)
-                # solver.bt_search(prop_BT)
-
-                # print("GAC")
-                solver.bt_search(prop_GAC)
-                print("Solution")
-                print_kenken_soln(var_array)
+                continue
             i += 1
+            print("Solving board")
+            csp, var_array = nary_ad_grid(b)
+            # csp, var_array = kenken_csp_model(b)
+            solver = BT(csp)
+            print("=======================================================")
+            print("FC")
+            solver.bt_search(prop_FC)
+            # print("GAC")
+            # solver.bt_search(prop_GAC)
+            print("Solution")
+            print_kenken_soln(var_array)
+
     if test_ord_mrv:
 
         a = Variable('A', [1])
@@ -102,7 +100,7 @@ if __name__ == "__main__":
 
         vals = val_lcv(map_2_CSP, map_2_CSP.vars[0])
         if vals:
-            if (vals == [2, 1]):
+            if (vals == [1, 2]):
                 print("Passed First Ord LCV Test")
             else:
                 print("Failed First LCV test")
@@ -124,7 +122,7 @@ if __name__ == "__main__":
 
         vals = val_lcv(map_2_CSP, map_2_CSP.vars[0])
         if vals:
-            if (vals == [2, 1]):
+            if (vals == [1, 2]):
                 print("Passed Second Ord LCV Test")
             else:
                 print("Failed Second LCV test")
