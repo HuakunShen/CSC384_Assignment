@@ -164,8 +164,8 @@ def make_constraint(board_list, dataset, i, domain):
                 product *= num
             if product == target:
                 valid.extend(list(itertools.permutations(comb, len(comb))))
-    valid2 = list(dict.fromkeys(valid))
-    constraint.add_satisfying_tuples(valid2)
+    valid = list(dict.fromkeys(valid))
+    constraint.add_satisfying_tuples(valid)
     return constraint
 
 
