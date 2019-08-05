@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -46,11 +46,13 @@ class InferenceModule:
         You must first place the ghost in the gameState, using setGhostPosition
         below.
         """
-        ghostPosition = gameState.getGhostPosition(self.index)  # The position you set
+        ghostPosition = gameState.getGhostPosition(
+            self.index)  # The position you set
         actionDist = self.ghostAgent.getDistribution(gameState)
         dist = util.Counter()
         for action, prob in list(actionDist.items()):
-            successorPosition = game.Actions.getSuccessor(ghostPosition, action)
+            successorPosition = game.Actions.getSuccessor(
+                ghostPosition, action)
             dist[successorPosition] = prob
         return dist
 
@@ -83,7 +85,8 @@ class InferenceModule:
     def initialize(self, gameState):
         "Initializes beliefs to a uniform distribution over all positions."
         # The legal positions do not include the ghost prison cells in the bottom left.
-        self.legalPositions = [p for p in gameState.getWalls().asList(False) if p[1] > 1]
+        self.legalPositions = [
+            p for p in gameState.getWalls().asList(False) if p[1] > 1]
         self.initializeUniformly(gameState)
 
     ######################################
@@ -119,7 +122,8 @@ class ExactInference(InferenceModule):
     def initializeUniformly(self, gameState):
         "Begin with a uniform distribution over ghost positions."
         self.beliefs = util.Counter()
-        for p in self.legalPositions: self.beliefs[p] = 1.0
+        for p in self.legalPositions:
+            self.beliefs[p] = 1.0
         self.beliefs.normalize()
 
     def observe(self, observation, gameState):
@@ -202,6 +206,8 @@ class ExactInference(InferenceModule):
             for p in self.legalPositions:
                 trueDistance = util.manhattanDistance(p, pacmanPosition)
                 allPossible[p] = self.beliefs[p] * emissionModel[trueDistance]
+        # pr(X_t | e_t, e_{t-1},...,e_1) = pr(X_t | e_{t-1},...,e_1) * pr(e_t | X_t)
+
         "*** END YOUR CODE HERE ***"
 
         allPossible.normalize()
@@ -283,7 +289,14 @@ class ExactInference(InferenceModule):
 
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        allPossible = util.Counter()
+        for oldPos in self.legalPositions:
+            newPosDist = self.getPositionDistribution(self.setGhostPosition(gameState, oldPos))
+            for newPos, prob in newPosDist.items():
+                allPossible[newPos] += self.beliefs[oldPos] * prob
+
+        allPossible.normalize()
+        self.beliefs = allPossible
         "*** END YOUR CODE HERE ***"
 
     def getBeliefDistribution(self):
@@ -342,7 +355,7 @@ class JointParticleFilter:
         self.ghostAgents.append(agent)
 
     def getJailPosition(self, i):
-        return (2 * i + 1, 1);
+        return (2 * i + 1, 1)
 
     def observeState(self, gameState):
         """Resamples the set of particles using the likelihood of the noisy
@@ -395,7 +408,8 @@ class JointParticleFilter:
         noisyDistances = gameState.getNoisyGhostDistances()
         if len(noisyDistances) < self.numGhosts:
             return
-        emissionModels = [busters.getObservationDistribution(dist) for dist in noisyDistances]
+        emissionModels = [busters.getObservationDistribution(
+            dist) for dist in noisyDistances]
 
         "*** YOUR CODE HERE ***"
 
